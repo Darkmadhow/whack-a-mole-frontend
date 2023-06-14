@@ -1,0 +1,12 @@
+.mode-selection-page {
+}
+
+.mode-selection-page .selection-menu {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.5rem;
+}
+
+.mode-selection-page h1 {
+  font-family: "Luckiest Guy", Verdana, Geneva;
+}
