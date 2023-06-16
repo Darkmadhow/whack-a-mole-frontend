@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import NavBar from "../components/NavBar";
 import { Link } from "react-router-dom";
 import "../styles/index.css";
+import { UserContext } from "../userContext";
 
 export default function Index() {
+  const { isAuthenticated } = useContext(UserContext);
   return (
     <div className="homepage">
       <NavBar />
@@ -18,6 +20,11 @@ export default function Index() {
         <Link to="/globalhighscore">
           <button>Highscores</button>
         </Link>
+        {isAuthenticated && (
+          <Link to="/userhighscore">
+            <button>Personal Highscores</button>
+          </Link>
+        )}
       </div>
     </div>
   );

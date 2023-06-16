@@ -3,7 +3,7 @@ import NavBar from "../components/NavBar";
 import ScoreTable from "../components/ScoreTable";
 import { UserContext } from "../userContext";
 
-export default function GlobalHighscore() {
+export default function UserHighscore() {
   const { user } = useContext(UserContext);
   const [gamemode, setGamemode] = useState("standard");
 
@@ -23,7 +23,7 @@ export default function GlobalHighscore() {
             <option value="time">Time Challenge</option>
             <option value="craze">60-Second-Craze</option>
           </select>
-          <ScoreTable user={user} gamemode={gamemode} />
+          <ScoreTable personal={true} gamemode={gamemode} />
         </div>
       </div>
     </>
