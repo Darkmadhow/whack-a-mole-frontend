@@ -5,13 +5,16 @@ import getHighscores from "../utils/scores";
 import SingleScore from "./SingleScore";
 import { Navigate } from "react-router-dom";
 
-export default function ScoreTable({ user, gamemode }) {
-  const { token, isAuthenticated } = useContext(UserContext);
+export default function ScoreTable({ personal, gamemode }) {
+  const { user, token, isAuthenticated } = useContext(UserContext);
   const [scores, setScores] = useState([]);
 
   useEffect(() => {
-    (async () => setScores(await getHighscores(token, user)))();
-  }, []);
+    (async () => {
+      if (!personal || (personal && user))
+        setScores(await getHighscores(token, personal ? user : null));
+    })();
+  }, [user]);
 
   if (!isAuthenticated) {
     alert("Please login to see Highscores");
