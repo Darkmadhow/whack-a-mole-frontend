@@ -21,7 +21,7 @@ export default function GlobalHighscore() {
             <option value="time">Time Challenge</option>
             <option value="craze">60-Second-Craze</option>
           </select>
-          <ScoreTable personal={false} gamemode={gamemode} />
+          <ScoreTable user={null} gamemode={gamemode} />
         </div>
       </div>
     </>
