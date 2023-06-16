@@ -22,6 +22,7 @@ export default function NavBar() {
   ) : (
     <div className="navbar">
       <NavLink to="/login">Login</NavLink>
+      <NavLink to="/register">Register</NavLink>
     </div>
   );
 }

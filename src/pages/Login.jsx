@@ -11,7 +11,6 @@ export default function Login() {
     isLoading,
     setIsLoading,
     setIsAuthenticated,
-    token,
     setToken,
     setUser,
   } = useContext(UserContext);
