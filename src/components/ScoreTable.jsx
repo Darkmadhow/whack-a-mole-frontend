@@ -6,7 +6,7 @@ import SingleScore from "./SingleScore";
 import { Navigate } from "react-router-dom";
 
 export default function ScoreTable({ user, gamemode }) {
-  const { user, token, isAuthenticated } = useContext(UserContext);
+  const { token, isAuthenticated } = useContext(UserContext);
   const [scores, setScores] = useState([]);
 
   useEffect(() => {
