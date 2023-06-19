@@ -1,11 +1,46 @@
 .login-page {
-}
-.login-page form {
+  background: url("../assets/img/register_background.png") no-repeat center
+    center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: space-evenly;
   align-items: center;
+}
+.login-page form {
+  margin: 2rem auto;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  background-color: #333b;
+  width: min-content;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+}
+.login-page label {
+  mix-blend-mode: color-dodge;
+  color: #eee;
+  font-weight: 600;
 }
 .login-page input {
+  width: max(33%, 200px);
   margin-bottom: 1rem;
+  padding: 0.3rem;
+}
+.login-page button {
+  margin: 2rem auto;
+}
+.login-page form a {
+  color: #9de752;
+}
+.login-page form a:hover {
+  color: #13cf09;
+  text-decoration: underline;
 }

@@ -13,7 +13,7 @@
 @font-face {
   font-family: "Quicksand";
   src: url("../assets/Quicksand-VariableFont_wght.ttf") format("truetype");
-  font-weight: normal;
+  font-weight: 100 1000;
   font-style: normal;
 }
 @font-face {
@@ -54,6 +54,7 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  font-family: "Quicksand";
 }
 
 h1 {

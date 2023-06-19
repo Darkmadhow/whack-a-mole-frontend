@@ -45,8 +45,8 @@ export default function Login() {
 
   return (
     <>
-      <NavBar />
       <div className="login-page">
+        <NavBar />
         <form onSubmit={handleSubmit}>
           <label forhtml="username">Username</label>
           <input
@@ -62,7 +62,7 @@ export default function Login() {
             name="password"
             onChange={handleChange}
           />
-          <input type="submit" value="Login" />
+          <button type="submit">Login</button>
           <Link to="/">Forgot your password?</Link>
         </form>
       </div>
