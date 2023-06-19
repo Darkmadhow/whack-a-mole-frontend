@@ -3,7 +3,7 @@ import { Link, Navigate } from "react-router-dom";
 import { UserContext } from "../userContext";
 import { registerUser, getUser } from "../utils/auth";
 import NavBar from "../components/NavBar";
-import "../styles/login.css";
+import "../styles/register.css";
 
 export default function Register() {
   const {
@@ -52,8 +52,8 @@ export default function Register() {
 
   return (
     <>
-      <NavBar />
       <div className="register-page">
+        <NavBar />
         <form onSubmit={handleSubmit}>
           <label forhtml="username">Username</label>
           <input
@@ -78,7 +78,7 @@ export default function Register() {
             name="passwordRepeat"
             onChange={handleChange}
           />
-          <input type="submit" value="Register" />
+          <button type="submit">Register</button>
         </form>
       </div>
     </>

@@ -1,0 +1,11 @@
+.score {
+  display: flex;
+  justify-content: space-evenly;
+  width: 75%;
+}
+
+@media screen and (max-width: 480px) {
+  .score {
+    width: 100%;
+  }
+}

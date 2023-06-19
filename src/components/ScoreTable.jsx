@@ -4,6 +4,7 @@ import { UserContext } from "../userContext";
 import getHighscores from "../utils/scores";
 import SingleScore from "./SingleScore";
 import { Navigate } from "react-router-dom";
+import "../styles/scoreTable.css";
 
 export default function ScoreTable({ personal, gamemode }) {
   const { user, token, isAuthenticated } = useContext(UserContext);
