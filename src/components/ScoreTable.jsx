@@ -28,7 +28,7 @@ export default function ScoreTable({ personal, gamemode }) {
             .filter((score) => score.gamemode === gamemode)
             .slice(0, 10)
             .map((score) => <SingleScore data={score} key={score._id} />)
-        : "Loading Highscores"}
+        : "No Highscores yet"}
     </div>
   );
 }
