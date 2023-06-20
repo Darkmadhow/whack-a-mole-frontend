@@ -1,10 +1,10 @@
 import React, { useContext } from "react";
 import NavBar from "../components/NavBar";
 import { Link } from "react-router-dom";
-import "../styles/index.css";
+import "../styles/home.css";
 import { UserContext } from "../userContext";
 
-export default function Index() {
+export default function Home() {
   const { isAuthenticated } = useContext(UserContext);
   return (
     <div className="homepage">
