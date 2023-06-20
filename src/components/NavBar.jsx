@@ -15,7 +15,7 @@ export default function NavBar() {
   }
 
   return isAuthenticated ? (
-    <div className="navbar">
+    <div className="navbar-global">
       <NavLink to="/">Home</NavLink>
       <div className="logout-menu">
         <span>{user?.username}</span>

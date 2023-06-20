@@ -45,6 +45,7 @@
   padding: 0.3rem;
   margin-bottom: 1rem;
   width: max-content;
+  background-color: #3b3b3b;
 }
 
 @media screen and (max-width: 480px) {
