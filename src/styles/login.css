@@ -36,6 +36,7 @@
 }
 .login-page button {
   margin: 2rem auto;
+  background-color: #1a1a1a;
 }
 .login-page form a {
   color: #9de752;

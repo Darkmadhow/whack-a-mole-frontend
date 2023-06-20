@@ -1,6 +1,6 @@
 import "./styles/App.css";
 import { Route, Routes } from "react-router-dom";
-import Index from "./pages/Index";
+import Home from "./pages/Home";
 import ModeSelection from "./pages/ModeSelection";
 import Tutorial from "./pages/Tutorial";
 import GlobalHighscore from "./pages/GlobalHighscore";
@@ -12,7 +12,7 @@ import UserHighscore from "./pages/UserHighscore";
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<Home />} />
       <Route path="/modeselection" element={<ModeSelection />} />
       <Route path="/tutorial" element={<Tutorial />} />
       <Route path="/globalhighscore" element={<GlobalHighscore />} />

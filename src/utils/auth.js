@@ -23,3 +23,12 @@ export const loginUser = async (formData) => {
   );
   return data.token;
 };
+
+export const updateUser = async (id, token, formData) => {
+  const { data } = await axios.put(
+    `${import.meta.env.VITE_BACKEND_API}/users/${id}`,
+    formData,
+    { headers: { Authorization: token } }
+  );
+  return data;
+};
