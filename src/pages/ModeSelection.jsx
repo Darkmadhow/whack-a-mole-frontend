@@ -9,7 +9,7 @@ export default function ModeSelection() {
       <NavBar />
       <div className="selection-menu">
         <h1>Select a Gamemode</h1>
-        <Link to="/">
+        <Link to="/standardGame">
           <button>Standard</button>
         </Link>
         <Link to="/">
