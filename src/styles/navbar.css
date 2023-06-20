@@ -19,3 +19,18 @@
   justify-content: space-around;
   column-gap: 1rem;
 }
+
+.navbar .profile-link {
+  height: 1.5rem;
+  width: 1.5rem;
+}
+
+@media screen and (max-width: 480px) {
+  .navbar {
+    padding: 0.5rem 0.5rem;
+    justify-content: space-evenly;
+  }
+  .navbar .logout-menu {
+    column-gap: 0.5rem;
+  }
+}
