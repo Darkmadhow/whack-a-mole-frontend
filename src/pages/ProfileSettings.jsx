@@ -28,6 +28,11 @@ export default function ProfileSettings() {
       setIsLoading(true);
       const updatedUser = await updateUser(user._id, token, { password });
       setUser(updatedUser);
+      setFormState({
+        email: "",
+        password: "",
+        passwordRepeat: "",
+      });
       setIsLoading(false);
     } catch (error) {
       alert(error.response?.data.error || error.message);
@@ -42,6 +47,11 @@ export default function ProfileSettings() {
       setIsLoading(true);
       const updatedUser = await updateUser(user._id, token, { email });
       setUser(updatedUser);
+      setFormState({
+        email: "",
+        password: "",
+        passwordRepeat: "",
+      });
       setIsLoading(false);
     } catch (error) {
       alert(error.response?.data.error || error.message);
