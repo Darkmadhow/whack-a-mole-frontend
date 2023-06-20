@@ -45,6 +45,7 @@
 .profile-page input[type="password"] {
   margin-bottom: 1rem;
   padding: 0.3rem;
+  background-color: #3b3b3b;
 }
 .profile-page button {
   margin-top: 1rem;
