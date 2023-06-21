@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
-import { Stage, Sprite, useTick } from "@pixi/react";
-import { Texture } from "pixi.js";
-import { EventEmitter } from "@pixi/utils";
-import MoleStandard from "../assets/game/MoleStandard";
-import "../styles/game.css";
+import React, { useState, useRef } from 'react';
+import { Stage, Sprite, useTick } from '@pixi/react';
+import { Texture } from 'pixi.js';
+import { EventEmitter } from '@pixi/utils';
+import MoleStandard from '../assets/game/MoleStandard';
+import '../styles/game.css';
 
 export default function StandardGame() {
   const gameObserver = useRef(new EventEmitter());
@@ -16,6 +16,10 @@ export default function StandardGame() {
     },
   };
 
+  gameObserver.current.on('dead', (e) => {
+    console.log(e);
+  });
+
   return (
     <div className="game">
       <Stage {...stageProps}>
@@ -26,12 +30,12 @@ export default function StandardGame() {
           emitter={gameObserver.current}
           id={1}
         />
-        <MoleStandard
+        {/* <MoleStandard
           xInit={stageProps.width / 4}
           yInit={stageProps.height / 3}
           emitter={gameObserver.current}
           id={2}
-        />
+        /> */}
       </Stage>
     </div>
   );
