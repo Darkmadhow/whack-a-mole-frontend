@@ -37,7 +37,7 @@ export default function NavBar() {
       </div>
     </div>
   ) : (
-    <div className="navbar">
+    <div className="navbar-global">
       <NavLink to="/">Home</NavLink>
       <NavLink to="/login">Login</NavLink>
       <NavLink to="/register">Register</NavLink>
