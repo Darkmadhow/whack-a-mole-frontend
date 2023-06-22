@@ -16,6 +16,7 @@ export default function StandardGame() {
     3: 0,
     4: 0,
   });
+
   const [moles, setMoles] = useState([
     "standard",
     "standard",
@@ -23,7 +24,7 @@ export default function StandardGame() {
     "standard",
     "standard",
   ]);
-  console.log(mole_count);
+
   const stageProps = {
     height: 900,
     width: 1400,

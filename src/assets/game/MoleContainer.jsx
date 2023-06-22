@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import MoleStandard from "./MoleStandard";
+import MoleGolden from "./MoleGolden";
 
 export default function MoleContainer({
   emitter,
@@ -16,7 +17,10 @@ export default function MoleContainer({
    */
   function replaceMole(e) {
     if (e.id !== id) return; //if some other mole dies, ignore the event
-    const newMole = "standard"; //TODO: create random mole types
+    const rnd = Math.floor(Math.random() * 2);
+    let newMole = "standard";
+    if (rnd) newMole = "golden"; //TODO: create random mole types
+    console.log("new mole will be a ", newMole, rnd);
     moles.splice(e.id, 1, newMole);
     setMoleCount((prev) => {
       return { ...prev, [e.id]: prev[e.id] + 1 };
@@ -35,6 +39,15 @@ export default function MoleContainer({
       return;
     case "hardhat":
       return; //TODO: Other mole types;
+    case "golden":
+      return (
+        <MoleGolden
+          xInit={xInit}
+          yInit={yInit + 10}
+          emitter={emitter}
+          id={id}
+        />
+      );
     default:
       return (
         <MoleStandard xInit={xInit} yInit={yInit} emitter={emitter} id={id} />

@@ -1,18 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
-import moleStandard from "../img/mole.png";
+import moleGolden from "../img/mole_golden.png";
 import moleStandardHit from "../img/mole_hit.png";
 
-export default function MoleStandard({ xInit, yInit, emitter, id }) {
+export default function MoleGolden({ xInit, yInit, emitter, id }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
-  const [moleImage, setMoleImage] = useState(moleStandard);
+  const [moleImage, setMoleImage] = useState(moleGolden);
   const time = useRef(0);
   const my_id = useRef(id);
-  const my_value = useRef(100); //Standard Mole point value
-  const my_decay = 20; //Decay rate of point value
+  const my_value = useRef(1000); //Standard Mole point value
+  const my_decay = 800; //Decay rate of point value
   const jumpHeight = -125;
-  const [stay_alive, stay_down] = [3000, 1000]; //Standard moles stay up for 3s and down for 1s
+  const [stay_alive, stay_down] = [1000, 1000]; //Standard moles stay up for 3s and down for 1s
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
