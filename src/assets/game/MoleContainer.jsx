@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import MoleStandard from "./MoleStandard";
 import MoleGolden from "./MoleGolden";
+import MoleHardHat from "./MoleHardHat";
 import MolePeeker from "./MolePeeker";
 
 export default function MoleContainer({
@@ -61,7 +62,9 @@ export default function MoleContainer({
         />
       );
     case "hardhat":
-      return; //TODO: Other mole types;
+      return (
+        <MoleHardHat xInit={xInit} yInit={yInit} emitter={emitter} id={id} />
+      );
     case "golden":
       return (
         <MoleGolden
