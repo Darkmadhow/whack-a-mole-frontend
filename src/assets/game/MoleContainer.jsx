@@ -3,6 +3,7 @@ import MoleStandard from "./MoleStandard";
 import MoleGolden from "./MoleGolden";
 import MoleHardHat from "./MoleHardHat";
 import MolePeeker from "./MolePeeker";
+import MoleBunny from "./MoleBunny";
 
 export default function MoleContainer({
   emitter,
@@ -19,7 +20,7 @@ export default function MoleContainer({
    */
   function replaceMole(e) {
     if (e.id !== id) return; //if some other mole dies, ignore the event
-    const rnd = Math.floor(Math.random() * 10);
+    const rnd = Math.floor(Math.random() * 13);
     let newMole = "standard";
     switch (rnd) {
       case 0:
@@ -32,6 +33,10 @@ export default function MoleContainer({
         break;
       case 4:
         newMole = "golden";
+        break;
+      case 5:
+      case 6:
+        newMole = "bunny";
         break;
       default:
         newMole = "standard";
@@ -56,14 +61,19 @@ export default function MoleContainer({
       return (
         <MolePeeker
           xInit={xInit}
-          yInit={yInit + 10}
+          yInit={yInit - 10}
           emitter={emitter}
           id={id}
         />
       );
     case "hardhat":
       return (
-        <MoleHardHat xInit={xInit} yInit={yInit} emitter={emitter} id={id} />
+        <MoleHardHat
+          xInit={xInit}
+          yInit={yInit + 12}
+          emitter={emitter}
+          id={id}
+        />
       );
     case "golden":
       return (
@@ -73,6 +83,10 @@ export default function MoleContainer({
           emitter={emitter}
           id={id}
         />
+      );
+    case "bunny":
+      return (
+        <MoleBunny xInit={xInit} yInit={yInit + 15} emitter={emitter} id={id} />
       );
     default:
       return (
