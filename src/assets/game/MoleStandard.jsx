@@ -11,6 +11,7 @@ export default function MoleStandard({ xInit, yInit, emitter, id }) {
   const my_id = useRef(id);
   const my_value = useRef(100); //Standard Mole point value
   const my_decay = 20; //Decay rate of point value
+  const jumpHeight = -125;
   const [stay_alive, stay_down] = [3000, 1000]; //Standard moles stay up for 3s and down for 1s
 
   const aliveTimer = useRef(null);
@@ -36,7 +37,7 @@ export default function MoleStandard({ xInit, yInit, emitter, id }) {
       //if mole is dead, do not advance timeline
       setY(yInit);
     } else if (moleState === moleStates.alive) {
-      setY(yInit - 100);
+      setY(yInit + jumpHeight);
       setX(xInit);
     } else if (
       //if mole should be moving during spawn or dying, advance timeline, update Y
@@ -44,7 +45,7 @@ export default function MoleStandard({ xInit, yInit, emitter, id }) {
       moleState === moleStates.dying
     ) {
       // console.log('y:', y, 'time.current:', time.current, 'delta:', delta);
-      setY(Math.sin(time.current) * -100 + yInit);
+      setY(Math.sin(time.current) * jumpHeight + yInit);
       time.current += 0.05 * delta;
       setX(xInit);
     }
@@ -68,6 +69,11 @@ export default function MoleStandard({ xInit, yInit, emitter, id }) {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
     }, getRandomTimeout());
+    return () => {
+      clearTimeout(aliveTimer.current);
+      clearTimeout(downTimer.current);
+      clearTimeout(stateTimer.current);
+    };
   }, []);
 
   /*
@@ -128,7 +134,8 @@ export default function MoleStandard({ xInit, yInit, emitter, id }) {
       anchor={0.5}
       scale={{ x: 0.3, y: 0.3 }}
       x={x}
-      y={y}
+      y={y + 90}
+      zIndex={1}
       eventMode={
         moleState === moleStates.dying || moleState === moleStates.dead
           ? 'none'

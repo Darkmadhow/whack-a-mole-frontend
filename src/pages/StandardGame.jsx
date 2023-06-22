@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
-import { Stage, Sprite, useTick } from '@pixi/react';
+import { Stage, Sprite, useTick, Container } from '@pixi/react';
 import { Texture } from 'pixi.js';
 import { EventEmitter } from '@pixi/utils';
 import MoleStandard from '../assets/game/MoleStandard';
 import '../styles/game.css';
+import MoleHole from '../assets/game/MoleHole';
+import MoleContainer from '../assets/game/MoleContainer';
 
 export default function StandardGame() {
   const gameObserver = useRef(new EventEmitter());
@@ -24,12 +26,13 @@ export default function StandardGame() {
     <div className="game">
       <Stage {...stageProps}>
         <Sprite texture={Texture.WHITE} width={1} height={1} />
-        <MoleStandard
-          xInit={stageProps.width / 2}
-          yInit={stageProps.height / 2}
-          emitter={gameObserver.current}
-          id={1}
-        />
+        <Container sortableChildren={true}>
+          <MoleContainer stageProps={stageProps} gameObserver={gameObserver} />
+          <MoleHole
+            xInit={stageProps.width / 2}
+            yInit={stageProps.height / 2}
+          />
+        </Container>
         {/* <MoleStandard
           xInit={stageProps.width / 4}
           yInit={stageProps.height / 3}
