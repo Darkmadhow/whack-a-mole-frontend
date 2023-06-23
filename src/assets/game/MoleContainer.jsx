@@ -42,7 +42,7 @@ export default function MoleContainer({
         newMole = "standard";
         break;
     }
-    console.log("new mole will be a ", newMole, rnd);
+    // console.log("new mole will be a ", newMole, rnd);
     moles.splice(e.id, 1, newMole);
     setMoleCount((prev) => {
       return { ...prev, [e.id]: prev[e.id] + 1 };

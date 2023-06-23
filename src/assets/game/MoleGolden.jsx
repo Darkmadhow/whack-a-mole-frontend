@@ -91,6 +91,7 @@ export default function MoleGolden({ xInit, yInit, emitter, id }) {
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
+      emitter.emit("evaded");
       time.current = 0;
       downTimer.current = setTimeout(() => {
         setStateTimer(moleStates.alive);
@@ -150,7 +151,7 @@ export default function MoleGolden({ xInit, yInit, emitter, id }) {
         clearTimeout(aliveTimer.current);
         clearTimeout(downTimer.current);
         setTimeout(() => {
-          console.log(my_id.current, " died");
+          // console.log(my_id.current, " died");
           emitter.emit("dead", { id: my_id.current, value: my_value.current });
         }, 505);
       }}

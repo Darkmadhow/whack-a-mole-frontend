@@ -154,8 +154,9 @@ export default function MoleBunny({ xInit, yInit, emitter, id }) {
         clearTimeout(aliveTimer.current);
         clearTimeout(downTimer.current);
         setTimeout(() => {
-          console.log(my_id.current, " died");
+          // console.log(my_id.current, " died");
           emitter.emit("dead", { id: my_id.current, value: my_value.current });
+          emitter.emit("evaded");
         }, 505);
       }}
     ></Sprite>
