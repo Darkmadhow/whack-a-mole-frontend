@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useTick } from "@pixi/react";
-import moleStandard from "../img/mole.png";
-import moleStandardHit from "../img/mole_hit.png";
+import React, { useEffect, useRef, useState } from 'react';
+import { Sprite, useTick } from '@pixi/react';
+import moleStandard from '../img/mole.png';
+import moleStandardHit from '../img/mole_hit.png';
 
 export default function MoleStandard({ xInit, yInit, emitter, id }) {
   const [x, setX] = useState(xInit);
@@ -19,11 +19,11 @@ export default function MoleStandard({ xInit, yInit, emitter, id }) {
   const stateTimer = useRef(null);
 
   const moleStates = {
-    dead: "dead",
-    alive: "alive",
-    spawning: "spawning",
-    dying: "dying",
-    down: "down",
+    dead: 'dead',
+    alive: 'alive',
+    spawning: 'spawning',
+    dying: 'dying',
+    down: 'down',
   };
 
   const [moleState, setMoleState] = useState(moleStates.dead);
@@ -114,17 +114,17 @@ export default function MoleStandard({ xInit, yInit, emitter, id }) {
    */
   function onHammered(e) {
     if (e.current !== my_id.current)
-      console.log("Mole ", e.current, " got hit, i am Mole ", my_id.current);
+      console.log('Mole ', e.current, ' got hit, i am Mole ', my_id.current);
   }
   /*
    * useEffect that subscribes to the 'whacked' event
    * DEPRECATED, WILL BE REMOVED
    */
   useEffect(() => {
-    emitter.on("whacked", onHammered);
+    emitter.on('whacked', onHammered);
 
     return () => {
-      emitter.off("whacked", onHammered);
+      emitter.off('whacked', onHammered);
     };
   }, []);
 
@@ -138,22 +138,21 @@ export default function MoleStandard({ xInit, yInit, emitter, id }) {
       zIndex={1}
       eventMode={
         moleState === moleStates.dying || moleState === moleStates.dead
-          ? "none"
-          : "static"
+          ? 'none'
+          : 'static'
       }
       pointerdown={() => {
         //upon being clicked, start timer to die and change state, emit hit event with mole id
-        console.log("WHACK!");
+        console.log('WHACK!');
         setMoleState(moleStates.dying);
         setStateTimer(moleStates.dead);
         setMoleImage(moleStandardHit);
         clearTimeout(aliveTimer.current);
         clearTimeout(downTimer.current);
         setTimeout(() => {
-          console.log(my_id.current, " died");
-          emitter.emit("dead", { id: my_id.current, value: my_value.current });
+          console.log(my_id.current, ' died');
+          emitter.emit('dead', { id: my_id.current, value: my_value.current });
         }, 505);
-      }}
-    ></Sprite>
+      }}></Sprite>
   );
 }
