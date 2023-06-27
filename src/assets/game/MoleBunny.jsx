@@ -3,7 +3,7 @@ import { Sprite, useTick } from "@pixi/react";
 import bunny from "../img/bunny.png";
 import moleStandardHit from "../img/mole_hit.png";
 
-export default function MoleBunny({ xInit, yInit, emitter, id }) {
+export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
   const [moleImage, setMoleImage] = useState(bunny);
@@ -12,7 +12,7 @@ export default function MoleBunny({ xInit, yInit, emitter, id }) {
   const my_value = useRef(-200); //Standard Mole point value
   const my_decay = 0; //Decay rate of point value
   const jumpHeight = -150;
-  const [stay_alive, stay_down] = [3000, 1000]; //Standard moles stay up for 3s and down for 1s
+  const [stay_alive, stay_down] = [3000/haste, 1000/haste]; //bunnies stay up for 3s base and down for 1s
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -46,7 +46,7 @@ export default function MoleBunny({ xInit, yInit, emitter, id }) {
     ) {
       // console.log('y:', y, 'time.current:', time.current, 'delta:', delta);
       setY(Math.sin(time.current) * jumpHeight + yInit);
-      time.current += 0.05 * delta;
+      time.current += 0.05 * delta * haste;
       setX(xInit);
     }
   });
@@ -56,8 +56,8 @@ export default function MoleBunny({ xInit, yInit, emitter, id }) {
     returns: a random integer between min and max to use in a spawn timeout
   */
   const getRandomTimeout = () => {
-    const min = 1000;
-    const max = 7000;
+    const min = 1000 / haste;
+    const max = 7000 / haste;
     return Math.floor(Math.random() * max - min + 1) + min;
   };
 
@@ -108,7 +108,7 @@ export default function MoleBunny({ xInit, yInit, emitter, id }) {
   param: state, the state into which the mole will switch into after timer expires
   */
   function setStateTimer(state) {
-    stateTimer.current = setTimeout(() => setMoleState(state), 500);
+    stateTimer.current = setTimeout(() => setMoleState(state), 500 / haste);
   }
 
   /*
@@ -154,10 +154,10 @@ export default function MoleBunny({ xInit, yInit, emitter, id }) {
         clearTimeout(aliveTimer.current);
         clearTimeout(downTimer.current);
         setTimeout(() => {
-          // console.log(my_id.current, " died");
+          // if the bunny is killed, use evaded message to subtract a life
           emitter.emit("dead", { id: my_id.current, value: my_value.current });
           emitter.emit("evaded");
-        }, 505);
+        }, 505/haste);
       }}
     ></Sprite>
   );

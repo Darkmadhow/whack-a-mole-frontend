@@ -13,6 +13,7 @@ export default function MoleContainer({
   yInit,
   moles,
   setMoleCount,
+  haste
 }) {
   /*
    * replaceMole: replaces the string of the recently died mole with a new one
@@ -64,6 +65,7 @@ export default function MoleContainer({
           yInit={yInit - 10}
           emitter={emitter}
           id={id}
+          haste={haste}
         />
       );
     case "hardhat":
@@ -73,6 +75,7 @@ export default function MoleContainer({
           yInit={yInit + 12}
           emitter={emitter}
           id={id}
+          haste={haste}
         />
       );
     case "golden":
@@ -82,15 +85,26 @@ export default function MoleContainer({
           yInit={yInit + 10}
           emitter={emitter}
           id={id}
+          haste={haste}
         />
       );
     case "bunny":
       return (
-        <MoleBunny xInit={xInit} yInit={yInit + 15} emitter={emitter} id={id} />
+        <MoleBunny 
+        xInit={xInit} 
+        yInit={yInit + 15} 
+        emitter={emitter} 
+        id={id} 
+        haste={haste}/>
       );
     default:
       return (
-        <MoleStandard xInit={xInit} yInit={yInit} emitter={emitter} id={id} />
+        <MoleStandard 
+        xInit={xInit} 
+        yInit={yInit} 
+        emitter={emitter} 
+        id={id} 
+        haste={haste}/>
       );
   }
 }
