@@ -26,9 +26,11 @@ export default function StandardGame() {
   useEffect(() => {
     gameObserver.current.on('dead', updateScore);
     gameObserver.current.on('evaded', subtractLife);
+    gameObserver.current.on('reset', replaceAllMoles);
     return () => {
       gameObserver.current.off('dying', updateScore);
       gameObserver.current.off('evaded', subtractLife);
+      gameObserver.current.off('reset', replaceAllMoles);
     };
   }, []);
 
@@ -57,6 +59,41 @@ export default function StandardGame() {
     { moleType: 'standard', key: 5000 },
   ]);
   // console.log('moles in StandardGame: ', moles);
+
+  function replaceAllMoles() {
+    const molesTemp = moles.map((mole) => {
+      const rnd = Math.floor(Math.random() * 13);
+      let newMole = 'standard';
+      switch (rnd) {
+        case 0:
+        case 1:
+          newMole = 'peeker';
+          break;
+        case 2:
+        case 3:
+          newMole = 'hardhat';
+          break;
+        case 4:
+          newMole = 'golden';
+          break;
+        case 5:
+        case 6:
+          newMole = 'bunny';
+          break;
+        default:
+          newMole = 'standard';
+          break;
+      }
+
+      mole.moleType = newMole;
+      mole.key++;
+
+      return mole;
+    });
+
+    setMoles(molesTemp);
+    console.log('New moles after reset:', molesTemp);
+  }
 
   //--------------- Stage Settings ---------------
   const stageProps = {
@@ -109,6 +146,8 @@ export default function StandardGame() {
       mole_count[3] +
       mole_count[4] +
       1;
+
+    console.log('molecounter:', molecounter);
     //increase difficulty every 10 moles
     if (!(molecounter % 3)) {
       haste.current *= 1.03;
