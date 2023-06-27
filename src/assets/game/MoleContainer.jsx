@@ -12,9 +12,11 @@ export default function MoleContainer({
   xInit,
   yInit,
   moles,
+  setMoles,
   setMoleCount,
   haste
 }) {
+
   /*
    * replaceMole: replaces the string of the recently died mole with a new one
    * params: e, the event that was triggered by the dying mole
@@ -50,10 +52,43 @@ export default function MoleContainer({
     });
   }
 
+  function replaceAllMoles(){
+    const rnd = Math.floor(Math.random() * 13);
+    let newMole = "standard";
+    switch (rnd) {
+      case 0:
+      case 1:
+        newMole = "peeker";
+        break;
+      case 2:
+      case 3:
+        newMole = "hardhat";
+        break;
+      case 4:
+        newMole = "golden";
+        break;
+      case 5:
+      case 6:
+        newMole = "bunny";
+        break;
+      default:
+        newMole = "standard";
+        break;
+    }
+    // const newMoles = moles.splice(id, 1, newMole);
+    setMoles(prev=>prev.toSpliced(id,1,newMole));
+    console.log("replaced mole on reset: ",id, " with ", newMole);
+   console.log("old moles: ",moles);
+  }
+
   //if my mole dies, replace it with a new one
   useEffect(() => {
     emitter.on("dead", replaceMole);
-    return () => emitter.off("dead", replaceMole);
+    emitter.on("reset", replaceAllMoles);
+    return () => {
+      emitter.off("dead", replaceMole);
+      emitter.off("reset", replaceAllMoles)
+    }
   }, []);
 
   //depending on the moleType, create a different mole

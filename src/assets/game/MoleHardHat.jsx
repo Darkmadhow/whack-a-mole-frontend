@@ -16,9 +16,11 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
   const [stay_alive, stay_down] = [4000/haste, 1000/haste]; //Hardhat moles stay up for 4s base and down for 1s
   const [life, setLife] = useState(1);
 
+  const spawnTimer = useRef(null);
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
   const stateTimer = useRef(null);
+  const deadTimer = useRef(null);
 
   const moleStates = {
     dead: "dead",
@@ -64,17 +66,23 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
   };
 
   /*
-    Upon Entering Stage, set a random timer upon which the mole wakes up
+    Upon Entering Stage, set a random timer upon which the mole wakes up and subscribe to game events
   */
   useEffect(() => {
-    setTimeout(() => {
+    emitter.on("reset_incoming", stopAllTimeouts);
+  
+    spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
     }, getRandomTimeout());
     return () => {
+      emitter.off("reset_incoming", stopAllTimeouts);
+
       clearTimeout(aliveTimer.current);
       clearTimeout(downTimer.current);
       clearTimeout(stateTimer.current);
+      clearTimeout(deadTimer.current);
+      clearTimeout(spawnTimer.current);
     };
   }, []);
 
@@ -110,26 +118,17 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
     stateTimer.current = setTimeout(() => setMoleState(state), 500/haste);
   }
 
-  /*
-    onHammered logs a message when another mole gets hit
+   /*
+    stopAllTimeouts deletes all running timers in preparation of a stage reset
     param: e, the event that triggeres the mole hit
-    DEPRECATED, WILL BE REMOVED
    */
-  function onHammered(e) {
-    if (e.current !== my_id.current)
-      console.log("Mole ", e.current, " got hit, i am Mole ", my_id.current);
-  }
-  /*
-   * useEffect that subscribes to the 'whacked' event
-   * DEPRECATED, WILL BE REMOVED
-   */
-  useEffect(() => {
-    emitter.on("whacked", onHammered);
-
-    return () => {
-      emitter.off("whacked", onHammered);
-    };
-  }, []);
+    function stopAllTimeouts(e) {
+      clearTimeout(aliveTimer.current);
+      clearTimeout(downTimer.current);
+      clearTimeout(stateTimer.current);
+      clearTimeout(spawnTimer.current);
+      console.log("mole", id, " killed itself")
+    }
 
   return (
     <Sprite
@@ -158,7 +157,11 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
           setMoleImage(moleStandardHit);
           clearTimeout(aliveTimer.current);
           clearTimeout(downTimer.current);
-          setTimeout(() => {
+          emitter.emit("dying", {
+            id: my_id.current,
+            value: my_value.current,
+          })
+          deadTimer.current = setTimeout(() => {
             // console.log(my_id.current, " died");
             emitter.emit("dead", {
               id: my_id.current,
