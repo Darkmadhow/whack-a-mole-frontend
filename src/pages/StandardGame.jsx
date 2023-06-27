@@ -1,24 +1,27 @@
-import React, { useState, useRef, useEffect } from "react";
-import { NavLink } from "react-router-dom";
-import { Stage, Sprite, Container } from "@pixi/react";
-import { Texture, Graphics } from "pixi.js";
-import { EventEmitter } from "@pixi/utils";
-import "../styles/game.css";
-import MoleHole from "../assets/game/MoleHole";
-import MoleContainer from "../assets/game/MoleContainer";
-import MalletStandard from "../assets/game/MalletStandard";
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { NavLink } from 'react-router-dom';
+import { Stage, Sprite, Container } from '@pixi/react';
+import { Texture, Graphics } from 'pixi.js';
+import { EventEmitter } from '@pixi/utils';
+import '../styles/game.css';
+import MoleHole from '../assets/game/MoleHole';
+import MoleContainer from '../assets/game/MoleContainer';
+import MalletStandard from '../assets/game/MalletStandard';
+import { uploadHighScore } from '../utils/scores';
+import { UserContext } from '../userContext';
 
 export default function StandardGame() {
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(5);
+  const { token } = useContext(UserContext);
   useEffect(() => {
-    gameObserver.current.on("dead", updateScore);
-    gameObserver.current.on("evaded", subtractLife);
+    gameObserver.current.on('dead', updateScore);
+    gameObserver.current.on('evaded', subtractLife);
     return () => {
-      gameObserver.current.off("dead", updateScore);
-      gameObserver.current.off("evaded", subtractLife);
+      gameObserver.current.off('dead', updateScore);
+      gameObserver.current.off('evaded', subtractLife);
     };
   }, []);
 
@@ -40,11 +43,11 @@ export default function StandardGame() {
 
   //current mole type in each hole, as a string array
   const [moles, setMoles] = useState([
-    "standard",
-    "standard",
-    "standard",
-    "standard",
-    "standard",
+    'standard',
+    'standard',
+    'standard',
+    'standard',
+    'standard',
   ]);
 
   //--------------- Stage Settings ---------------
@@ -87,18 +90,22 @@ export default function StandardGame() {
   }
 
   //game over at 0 lives
-  if (lives <= 0)
+  if (lives <= 0) {
+    uploadHighScore(token, { score: score, gamemode: 'standard' });
+
     return (
       <div className="game">
         <div className="game-over-screen">
           <h2>You got {score} points</h2>
           {/* TODO: Load Highscore placement */}
+
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
         </div>
       </div>
     );
+  }
 
   return (
     <div className="game">
