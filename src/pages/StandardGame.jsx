@@ -32,7 +32,6 @@ export default function StandardGame() {
     };
   }, []);
 
-
   function updateScore(e) {
     setScore((prev) => prev + e.value);
   }
@@ -51,13 +50,13 @@ export default function StandardGame() {
 
   //current mole type in each hole, as a string array
   const [moles, setMoles] = useState([
-    'standard',
-    'standard',
-    'standard',
-    'standard',
-    'standard',
+    { moleType: 'standard', key: 1000 },
+    { moleType: 'standard', key: 2000 },
+    { moleType: 'standard', key: 3000 },
+    { moleType: 'standard', key: 4000 },
+    { moleType: 'standard', key: 5000 },
   ]);
-  console.log("moles in StandardGame: ", moles);
+  // console.log('moles in StandardGame: ', moles);
 
   //--------------- Stage Settings ---------------
   const stageProps = {
@@ -111,13 +110,13 @@ export default function StandardGame() {
       mole_count[4] +
       1;
     //increase difficulty every 10 moles
-    if (!(molecounter % 10)) {
+    if (!(molecounter % 3)) {
       haste.current *= 1.03;
       console.log('Difficulty increased');
-      gameObserver.current.emit("reset_incoming");
+      gameObserver.current.emit('reset_incoming');
       stage.stop();
       setTimeout(() => {
-        gameObserver.current.emit("reset");
+        gameObserver.current.emit('reset');
         stage.start();
       }, 5000);
     }
@@ -159,13 +158,13 @@ export default function StandardGame() {
               stageProps={stageProps}
               emitter={gameObserver.current}
               id={0}
-              moleType={moles[0]}
+              // moleType={moles[0].moleType}
               xInit={hole_coords[0].x}
               yInit={hole_coords[0].y}
               moles={moles}
               setMoles={setMoles}
               setMoleCount={setMoleCount}
-              key={mole_count[0]}
+              // key={moles[0].key}
               haste={haste.current}
             />
             <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
@@ -176,13 +175,13 @@ export default function StandardGame() {
               stageProps={stageProps}
               emitter={gameObserver.current}
               id={1}
-              moleType={moles[1]}
+              // moleType={moles[1].moleType}
               xInit={hole_coords[1].x}
               yInit={hole_coords[1].y}
               moles={moles}
               setMoles={setMoles}
               setMoleCount={setMoleCount}
-              key={mole_count[1]}
+              // key={moles[1].key}
               haste={haste.current}
             />
             <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
@@ -193,13 +192,13 @@ export default function StandardGame() {
               stageProps={stageProps}
               emitter={gameObserver.current}
               id={2}
-              moleType={moles[2]}
+              // moleType={moles[2].moleType}
               xInit={hole_coords[2].x}
               yInit={hole_coords[2].y}
               moles={moles}
               setMoles={setMoles}
               setMoleCount={setMoleCount}
-              key={mole_count[2]}
+              // key={moles[2].key}
               haste={haste.current}
             />
             <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
@@ -210,13 +209,13 @@ export default function StandardGame() {
               stageProps={stageProps}
               emitter={gameObserver.current}
               id={3}
-              moleType={moles[3]}
+              // moleType={moles[3].moleType}
               xInit={hole_coords[3].x}
               yInit={hole_coords[3].y}
               moles={moles}
               setMoles={setMoles}
               setMoleCount={setMoleCount}
-              key={mole_count[3]}
+              // key={moles[3].key}
               haste={haste.current}
             />
             <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
@@ -227,13 +226,13 @@ export default function StandardGame() {
               stageProps={stageProps}
               emitter={gameObserver.current}
               id={4}
-              moleType={moles[4]}
+              // moleType={moles[4].moleType}
               xInit={hole_coords[4].x}
               yInit={hole_coords[4].y}
               moles={moles}
               setMoles={setMoles}
               setMoleCount={setMoleCount}
-              key={mole_count[4]}
+              // key={moles[4].key]}
               haste={haste.current}
             />
             <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
