@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
 import moleHardHat from "../img/mole_hardhat.png";
+import moleStandard from "../img/mole.png";
 import moleStandardHit from "../img/mole_hit.png";
 
-export default function MoleHardHat({ xInit, yInit, emitter, id }) {
+export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
   const [moleImage, setMoleImage] = useState(moleHardHat);
@@ -12,7 +13,7 @@ export default function MoleHardHat({ xInit, yInit, emitter, id }) {
   const my_value = useRef(500); //Standard Mole point value
   const my_decay = 250; //Decay rate of point value
   const jumpHeight = -145;
-  const [stay_alive, stay_down] = [4000, 1000]; //Standard moles stay up for 3s and down for 1s
+  const [stay_alive, stay_down] = [4000/haste, 1000/haste]; //Hardhat moles stay up for 4s base and down for 1s
   const [life, setLife] = useState(1);
 
   const aliveTimer = useRef(null);
@@ -47,7 +48,7 @@ export default function MoleHardHat({ xInit, yInit, emitter, id }) {
     ) {
       // console.log('y:', y, 'time.current:', time.current, 'delta:', delta);
       setY(Math.sin(time.current) * jumpHeight + yInit);
-      time.current += 0.05 * delta;
+      time.current += 0.05 * delta * haste;
       setX(xInit);
     }
   });
@@ -57,8 +58,8 @@ export default function MoleHardHat({ xInit, yInit, emitter, id }) {
     returns: a random integer between min and max to use in a spawn timeout
   */
   const getRandomTimeout = () => {
-    const min = 1000;
-    const max = 7000;
+    const min = 1000/haste;
+    const max = 7000/haste;
     return Math.floor(Math.random() * max - min + 1) + min;
   };
 
@@ -106,7 +107,7 @@ export default function MoleHardHat({ xInit, yInit, emitter, id }) {
   param: state, the state into which the mole will switch into after timer expires
   */
   function setStateTimer(state) {
-    stateTimer.current = setTimeout(() => setMoleState(state), 500);
+    stateTimer.current = setTimeout(() => setMoleState(state), 500/haste);
   }
 
   /*
@@ -144,7 +145,11 @@ export default function MoleHardHat({ xInit, yInit, emitter, id }) {
           : "static"
       }
       pointerdown={() => {
-        if (life > 0) setLife((prev) => prev - 1);
+        if (life > 0) {
+          //TODO: animate hat flying off
+          setLife((prev) => prev - 1); 
+          setMoleImage(moleStandard)
+        }
         else {
           //upon being clicked, start timer to die and change state, emit hit event with mole id
           console.log("WHACK!");
@@ -159,7 +164,7 @@ export default function MoleHardHat({ xInit, yInit, emitter, id }) {
               id: my_id.current,
               value: my_value.current,
             });
-          }, 505);
+          }, 505/haste);
         }
       }}
     ></Sprite>

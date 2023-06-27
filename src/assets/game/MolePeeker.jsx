@@ -3,7 +3,7 @@ import { Sprite, useTick } from "@pixi/react";
 import molePeeker from "../img/mole_peeker.png";
 import moleStandardHit from "../img/mole_hit.png";
 
-export default function MolePeeker({ xInit, yInit, emitter, id }) {
+export default function MolePeeker({ xInit, yInit, emitter, id, haste }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
   const [moleImage, setMoleImage] = useState(molePeeker);
@@ -12,7 +12,7 @@ export default function MolePeeker({ xInit, yInit, emitter, id }) {
   const my_value = useRef(300); //Standard Mole point value
   const my_decay = 100; //Decay rate of point value
   const jumpHeight = -75;
-  const [stay_alive, stay_down] = [2000, 2000]; //Standard moles stay up for 3s and down for 1s
+  const [stay_alive, stay_down] = [2000/haste, 2000/haste]; //Peeker moles stay up for 2s base and down for 2s
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -46,7 +46,7 @@ export default function MolePeeker({ xInit, yInit, emitter, id }) {
     ) {
       // console.log('y:', y, 'time.current:', time.current, 'delta:', delta);
       setY(Math.sin(time.current) * jumpHeight + yInit);
-      time.current += 0.05 * delta;
+      time.current += 0.05 * delta * haste;
       setX(xInit);
     }
   });
@@ -56,8 +56,8 @@ export default function MolePeeker({ xInit, yInit, emitter, id }) {
     returns: a random integer between min and max to use in a spawn timeout
   */
   const getRandomTimeout = () => {
-    const min = 1000;
-    const max = 7000;
+    const min = 1000/haste;
+    const max = 7000/haste;
     return Math.floor(Math.random() * max - min + 1) + min;
   };
 
@@ -105,7 +105,7 @@ export default function MolePeeker({ xInit, yInit, emitter, id }) {
   param: state, the state into which the mole will switch into after timer expires
   */
   function setStateTimer(state) {
-    stateTimer.current = setTimeout(() => setMoleState(state), 500);
+    stateTimer.current = setTimeout(() => setMoleState(state), 500/haste);
   }
 
   /*
@@ -153,7 +153,7 @@ export default function MolePeeker({ xInit, yInit, emitter, id }) {
         setTimeout(() => {
           // console.log(my_id.current, " died");
           emitter.emit("dead", { id: my_id.current, value: my_value.current });
-        }, 505);
+        }, 505/haste);
       }}
     ></Sprite>
   );

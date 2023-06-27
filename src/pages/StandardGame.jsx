@@ -7,12 +7,18 @@ import "../styles/game.css";
 import MoleHole from "../assets/game/MoleHole";
 import MoleContainer from "../assets/game/MoleContainer";
 import MalletStandard from "../assets/game/MalletStandard";
+import Reticle from "../assets/game/Reticle";
 
 export default function StandardGame() {
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
+  //initial score and lives
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(5);
+  //difficulty speed multiplier
+  const haste = useRef(1);
+
+  //subscribe to mole events
   useEffect(() => {
     gameObserver.current.on("dead", updateScore);
     gameObserver.current.on("evaded", subtractLife);
@@ -86,6 +92,19 @@ export default function StandardGame() {
     return newCircle;
   }
 
+  /*
+   * increases difficulty over time
+   */
+  useEffect(()=>{
+    //count moles hit
+    const molecounter = mole_count[0] + mole_count[1] + mole_count[2] + mole_count[3] + mole_count[4] + 1;
+    //increase difficulty every 10 moles
+    if(!(molecounter % 10)) {
+      haste.current *= 1.03;
+      console.log("Difficulty increased");
+    }
+  },[mole_count]);
+
   //game over at 0 lives
   if (lives <= 0)
     return (
@@ -110,7 +129,8 @@ export default function StandardGame() {
       <Stage {...stageProps}>
         <Container sortableChildren={true}>
           <Sprite texture={Texture.WHITE} width={1} height={1} />
-          {/* <MalletStandard emitter={gameObserver.current} /> */}
+          <MalletStandard />
+          <Reticle />
           {/* Hole Nr. 0 */}
           <Container sortableChildren={true} mask={hole_masks.current[0]}>
             <MoleContainer
@@ -123,6 +143,7 @@ export default function StandardGame() {
               moles={moles}
               setMoleCount={setMoleCount}
               key={mole_count[0]}
+              haste={haste.current}
             />
             <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
           </Container>
@@ -138,6 +159,7 @@ export default function StandardGame() {
               moles={moles}
               setMoleCount={setMoleCount}
               key={mole_count[1]}
+              haste={haste.current}
             />
             <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
           </Container>
@@ -153,6 +175,7 @@ export default function StandardGame() {
               moles={moles}
               setMoleCount={setMoleCount}
               key={mole_count[2]}
+              haste={haste.current}
             />
             <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
           </Container>
@@ -168,6 +191,7 @@ export default function StandardGame() {
               moles={moles}
               setMoleCount={setMoleCount}
               key={mole_count[3]}
+              haste={haste.current}
             />
             <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
           </Container>
@@ -183,6 +207,7 @@ export default function StandardGame() {
               moles={moles}
               setMoleCount={setMoleCount}
               key={mole_count[4]}
+              haste={haste.current}
             />
             <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
           </Container>
