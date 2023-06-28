@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
 import moleGolden from "../img/mole_golden.png";
-import moleStandardHit from "../img/mole_hit.png";
+import moleGoldenHit from "../img/mole_golden_hit.png";
 
 export default function MoleGolden({ xInit, yInit, emitter, id, haste }) {
   const [x, setX] = useState(xInit);
@@ -12,7 +12,7 @@ export default function MoleGolden({ xInit, yInit, emitter, id, haste }) {
   const my_value = useRef(1000); //Standard Mole point value
   const my_decay = 800; //Decay rate of point value
   const jumpHeight = -125;
-  const [stay_alive, stay_down] = [1000/haste, 1000/haste]; //Golden moles stay up for 1s base and down for 1s
+  const [stay_alive, stay_down] = [1000 / haste, 1000 / haste]; //Golden moles stay up for 1s base and down for 1s
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -113,7 +113,7 @@ export default function MoleGolden({ xInit, yInit, emitter, id, haste }) {
   param: state, the state into which the mole will switch into after timer expires
   */
   function setStateTimer(state) {
-    stateTimer.current = setTimeout(() => setMoleState(state), 500/haste);
+    stateTimer.current = setTimeout(() => setMoleState(state), 500 / haste);
   }
 
   /*
@@ -145,13 +145,13 @@ export default function MoleGolden({ xInit, yInit, emitter, id, haste }) {
         //upon being clicked, start timer to die and change state, emit hit event with mole id
         setMoleState(moleStates.dying);
         setStateTimer(moleStates.dead);
-        setMoleImage(moleStandardHit);
+        setMoleImage(moleGoldenHit);
         clearTimeout(aliveTimer.current);
         clearTimeout(downTimer.current);
         deadTimer.current = setTimeout(() => {
           // console.log(my_id.current, " died");
           emitter.emit("dead", { id: my_id.current, value: my_value.current });
-        }, 505/haste);
+        }, 505 / haste);
       }}
     ></Sprite>
   );

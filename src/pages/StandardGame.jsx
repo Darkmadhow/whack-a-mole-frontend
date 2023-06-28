@@ -297,6 +297,12 @@ export default function StandardGame() {
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
+          <Stage
+            width={1}
+            height={1}
+            options={{ backgroundAlpha: 0 }}
+            onMount={setStage}
+          />
         </div>
       </div>
     );

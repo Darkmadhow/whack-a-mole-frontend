@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
 import bunny from "../img/bunny.png";
-import moleStandardHit from "../img/mole_hit.png";
+import bunnyHit from "../img/bunny_hit.png";
 
 export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
   const [x, setX] = useState(xInit);
@@ -12,7 +12,7 @@ export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
   const my_value = useRef(-200); //Standard Mole point value
   const my_decay = 0; //Decay rate of point value
   const jumpHeight = -150;
-  const [stay_alive, stay_down] = [3000/haste, 1000/haste]; //bunnies stay up for 3s base and down for 1s
+  const [stay_alive, stay_down] = [3000 / haste, 1000 / haste]; //bunnies stay up for 3s base and down for 1s
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -68,7 +68,7 @@ export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
   */
   useEffect(() => {
     emitter.on("reset_incoming", stopAllTimeouts);
-  
+
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
@@ -125,13 +125,13 @@ export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
     stopAllTimeouts deletes all running timers in preparation of a stage reset
     param: e, the event that triggeres the mole hit
    */
-    function stopAllTimeouts(e) {
-      clearTimeout(aliveTimer.current);
-      clearTimeout(downTimer.current);
-      clearTimeout(stateTimer.current);
-      clearTimeout(deadTimer.current);
-      clearTimeout(spawnTimer.current);
-    }
+  function stopAllTimeouts(e) {
+    clearTimeout(aliveTimer.current);
+    clearTimeout(downTimer.current);
+    clearTimeout(stateTimer.current);
+    clearTimeout(deadTimer.current);
+    clearTimeout(spawnTimer.current);
+  }
 
   return (
     <Sprite
@@ -150,14 +150,14 @@ export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
         //upon being clicked, start timer to die and change state, emit hit event with mole id
         setMoleState(moleStates.dying);
         setStateTimer(moleStates.dead);
-        setMoleImage(moleStandardHit);
+        setMoleImage(bunnyHit);
         clearTimeout(aliveTimer.current);
         clearTimeout(downTimer.current);
         deadTimer.current = setTimeout(() => {
           // if the bunny is killed, use evaded message to subtract a life
           emitter.emit("dead", { id: my_id.current, value: my_value.current });
           emitter.emit("evaded");
-        }, 505/haste);
+        }, 505 / haste);
       }}
     ></Sprite>
   );

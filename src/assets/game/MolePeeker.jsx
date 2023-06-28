@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
 import molePeeker from "../img/mole_peeker.png";
-import moleStandardHit from "../img/mole_hit.png";
+import molePeekerHit from "../img/mole_peeker_hit.png";
 
 export default function MolePeeker({ xInit, yInit, emitter, id, haste }) {
   const [x, setX] = useState(xInit);
@@ -12,7 +12,7 @@ export default function MolePeeker({ xInit, yInit, emitter, id, haste }) {
   const my_value = useRef(300); //Standard Mole point value
   const my_decay = 100; //Decay rate of point value
   const jumpHeight = -75;
-  const [stay_alive, stay_down] = [2000/haste, 2000/haste]; //Peeker moles stay up for 2s base and down for 2s
+  const [stay_alive, stay_down] = [2000 / haste, 2000 / haste]; //Peeker moles stay up for 2s base and down for 2s
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -58,8 +58,8 @@ export default function MolePeeker({ xInit, yInit, emitter, id, haste }) {
     returns: a random integer between min and max to use in a spawn timeout
   */
   const getRandomTimeout = () => {
-    const min = 1000/haste;
-    const max = 7000/haste;
+    const min = 1000 / haste;
+    const max = 7000 / haste;
     return Math.floor(Math.random() * max - min + 1) + min;
   };
 
@@ -113,20 +113,20 @@ export default function MolePeeker({ xInit, yInit, emitter, id, haste }) {
   param: state, the state into which the mole will switch into after timer expires
   */
   function setStateTimer(state) {
-    stateTimer.current = setTimeout(() => setMoleState(state), 500/haste);
+    stateTimer.current = setTimeout(() => setMoleState(state), 500 / haste);
   }
 
   /*
     stopAllTimeouts deletes all running timers in preparation of a stage reset
     param: e, the event that triggeres the mole hit
    */
-    function stopAllTimeouts(e) {
-      clearTimeout(aliveTimer.current);
-      clearTimeout(downTimer.current);
-      clearTimeout(stateTimer.current);
-      clearTimeout(deadTimer.current);
-      clearTimeout(spawnTimer.current);
-    }
+  function stopAllTimeouts(e) {
+    clearTimeout(aliveTimer.current);
+    clearTimeout(downTimer.current);
+    clearTimeout(stateTimer.current);
+    clearTimeout(deadTimer.current);
+    clearTimeout(spawnTimer.current);
+  }
 
   return (
     <Sprite
@@ -145,12 +145,12 @@ export default function MolePeeker({ xInit, yInit, emitter, id, haste }) {
         //upon being clicked, start timer to die and change state, emit hit event with mole id
         setMoleState(moleStates.dying);
         setStateTimer(moleStates.dead);
-        setMoleImage(moleStandardHit);
+        setMoleImage(molePeekerHit);
         clearTimeout(aliveTimer.current);
         clearTimeout(downTimer.current);
         deadTimer.current = setTimeout(() => {
           emitter.emit("dead", { id: my_id.current, value: my_value.current });
-        }, 505/haste);
+        }, 505 / haste);
       }}
     ></Sprite>
   );
