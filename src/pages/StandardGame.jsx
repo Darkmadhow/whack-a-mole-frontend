@@ -1,15 +1,22 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
-import { NavLink } from 'react-router-dom';
-import { Stage, Sprite, Container } from '@pixi/react';
-import { Texture, Graphics } from 'pixi.js';
-import { EventEmitter } from '@pixi/utils';
-import '../styles/game.css';
-import MoleHole from '../assets/game/MoleHole';
-import MoleContainer from '../assets/game/MoleContainer';
-import MalletStandard from '../assets/game/MalletStandard';
-import { uploadHighScore } from '../utils/scores';
-import { UserContext } from '../userContext';
-import Reticle from '../assets/game/Reticle';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useCallback,
+} from "react";
+import { NavLink } from "react-router-dom";
+import { Stage, Sprite, Container } from "@pixi/react";
+import { Texture, Graphics } from "pixi.js";
+import { EventEmitter } from "@pixi/utils";
+import "../styles/game.css";
+import MoleHole from "../assets/game/MoleHole";
+import MoleContainer from "../assets/game/MoleContainer";
+import MalletStandard from "../assets/game/MalletStandard";
+import { uploadHighScore } from "../utils/scores";
+import { UserContext } from "../userContext";
+import Reticle from "../assets/game/Reticle";
+import UpgradeModal from "../components/UpgradeModal";
 
 export default function StandardGame() {
   const [stage, setStage] = useState();
@@ -24,13 +31,13 @@ export default function StandardGame() {
   //subscribe to mole events
   const { token } = useContext(UserContext);
   useEffect(() => {
-    gameObserver.current.on('dead', updateScore);
-    gameObserver.current.on('evaded', subtractLife);
-    gameObserver.current.on('reset', replaceAllMoles);
+    gameObserver.current.on("dead", updateScore);
+    gameObserver.current.on("evaded", subtractLife);
+    gameObserver.current.on("reset", replaceAllMoles);
     return () => {
-      gameObserver.current.off('dying', updateScore);
-      gameObserver.current.off('evaded', subtractLife);
-      gameObserver.current.off('reset', replaceAllMoles);
+      gameObserver.current.off("dying", updateScore);
+      gameObserver.current.off("evaded", subtractLife);
+      gameObserver.current.off("reset", replaceAllMoles);
     };
   }, []);
 
@@ -38,9 +45,10 @@ export default function StandardGame() {
     setScore((prev) => prev + e.value);
   }
 
-  function subtractLife() {
+  const subtractLife = useCallback(() => {
     setLives((prev) => prev - 1);
-  }
+  }, [lives]);
+
   //counter for the moles in each hole, as iterable object
   const [mole_count, setMoleCount] = useState({
     0: 0,
@@ -52,36 +60,35 @@ export default function StandardGame() {
 
   //current mole type in each hole, as a string array
   const [moles, setMoles] = useState([
-    { moleType: 'standard', key: 1000 },
-    { moleType: 'standard', key: 2000 },
-    { moleType: 'standard', key: 3000 },
-    { moleType: 'standard', key: 4000 },
-    { moleType: 'standard', key: 5000 },
+    { moleType: "standard", key: 1000 },
+    { moleType: "standard", key: 2000 },
+    { moleType: "standard", key: 3000 },
+    { moleType: "standard", key: 4000 },
+    { moleType: "standard", key: 5000 },
   ]);
-  // console.log('moles in StandardGame: ', moles);
 
   function replaceAllMoles() {
     const molesTemp = moles.map((mole) => {
       const rnd = Math.floor(Math.random() * 13);
-      let newMole = 'standard';
+      let newMole = "standard";
       switch (rnd) {
         case 0:
         case 1:
-          newMole = 'peeker';
+          newMole = "peeker";
           break;
         case 2:
         case 3:
-          newMole = 'hardhat';
+          newMole = "hardhat";
           break;
         case 4:
-          newMole = 'golden';
+          newMole = "golden";
           break;
         case 5:
         case 6:
-          newMole = 'bunny';
+          newMole = "bunny";
           break;
         default:
-          newMole = 'standard';
+          newMole = "standard";
           break;
       }
 
@@ -146,22 +153,19 @@ export default function StandardGame() {
       mole_count[4] +
       1;
 
-    console.log('molecounter:', molecounter);
     //increase difficulty every 10 moles
     if (!(molecounter % 10)) {
+      gameObserver.current.off("evaded", subtractLife);
       haste.current *= 1.03;
-      gameObserver.current.emit('reset_incoming');
+      gameObserver.current.emit("reset_incoming");
       stage.stop();
-      setTimeout(() => {
-        gameObserver.current.emit('reset');
-        stage.start();
-      }, 5000);
+      window.my_modal_2.showModal();
     }
   }, [mole_count]);
 
   //game over at 0 lives
   if (lives <= 0) {
-    uploadHighScore(token, { score: score, gamemode: 'standard' });
+    uploadHighScore(token, { score: score, gamemode: "standard" });
 
     return (
       <div className="game">
@@ -276,6 +280,11 @@ export default function StandardGame() {
           </Container>
         </Container>
       </Stage>
+      <UpgradeModal
+        stage={stage}
+        gameObserver={gameObserver}
+        subtractLife={subtractLife}
+      />
     </div>
   );
 }
