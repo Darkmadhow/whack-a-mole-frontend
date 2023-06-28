@@ -1,4 +1,12 @@
 .upgrade-modal button {
-    height: 2rem;
+    background-color: transparent;
+}
+.upgrade-modal .modal-action {
+    justify-content: space-evenly;
+}
+.upgrade-modal .modal-action button {
+    /* width: calc(50% - 1rem); */
     width: 50%;
+    padding-bottom: 50%;
+    background-size: cover;
 }
