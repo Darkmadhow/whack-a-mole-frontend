@@ -48,7 +48,6 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
       moleState === moleStates.spawning ||
       moleState === moleStates.dying
     ) {
-      // console.log('y:', y, 'time.current:', time.current, 'delta:', delta);
       setY(Math.sin(time.current) * jumpHeight + yInit);
       time.current += 0.05 * delta * haste;
       setX(xInit);
@@ -127,7 +126,6 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
       clearTimeout(downTimer.current);
       clearTimeout(stateTimer.current);
       clearTimeout(spawnTimer.current);
-      console.log("mole", id, " killed itself")
     }
 
   return (
@@ -151,7 +149,6 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
         }
         else {
           //upon being clicked, start timer to die and change state, emit hit event with mole id
-          console.log("WHACK!");
           setMoleState(moleStates.dying);
           setStateTimer(moleStates.dead);
           setMoleImage(moleStandardHit);
@@ -162,7 +159,6 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
             value: my_value.current,
           })
           deadTimer.current = setTimeout(() => {
-            // console.log(my_id.current, " died");
             emitter.emit("dead", {
               id: my_id.current,
               value: my_value.current,

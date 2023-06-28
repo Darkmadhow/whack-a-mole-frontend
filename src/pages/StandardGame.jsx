@@ -92,7 +92,6 @@ export default function StandardGame() {
     });
 
     setMoles(molesTemp);
-    console.log('New moles after reset:', molesTemp);
   }
 
   //--------------- Stage Settings ---------------
@@ -151,7 +150,6 @@ export default function StandardGame() {
     //increase difficulty every 10 moles
     if (!(molecounter % 10)) {
       haste.current *= 1.03;
-      console.log('Difficulty increased');
       gameObserver.current.emit('reset_incoming');
       stage.stop();
       setTimeout(() => {
@@ -162,7 +160,7 @@ export default function StandardGame() {
   }, [mole_count]);
 
   //game over at 0 lives
-  if (lives <= -1110) {
+  if (lives <= 0) {
     uploadHighScore(token, { score: score, gamemode: 'standard' });
 
     return (

@@ -68,7 +68,6 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
     Upon Entering Stage, set a random timer upon which the mole wakes up and subscribe to game events
   */
   useEffect(() => {
-    console.log('mole', my_id.current, 'mounted');
     emitter.on('reset_incoming', stopAllTimeouts);
 
     spawnTimer.current = setTimeout(() => {
@@ -86,7 +85,6 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
 
       stopAllTimeouts();
 
-      console.log('mole', my_id.current, 'unmounted');
     };
   }, []);
 
@@ -132,7 +130,6 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
     clearTimeout(stateTimer.current);
     clearTimeout(deadTimer.current);
     clearTimeout(spawnTimer.current);
-    console.log('mole', my_id.current, ' killed itself');
   }
 
   return (
@@ -150,7 +147,6 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
       }
       pointerdown={() => {
         //upon being clicked, start timer to die and change state, emit hit event with mole id
-        console.log('WHACK!');
         setMoleState(moleStates.dying);
         setStateTimer(moleStates.dead);
         setMoleImage(moleStandardHit);

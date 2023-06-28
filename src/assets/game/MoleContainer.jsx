@@ -43,7 +43,6 @@ export default function MoleContainer({
         newMole = 'standard';
         break;
     }
-    console.log('new mole will be a ', newMole, rnd);
 
     moles[e.id].moleType = newMole;
     moles[e.id].key++;

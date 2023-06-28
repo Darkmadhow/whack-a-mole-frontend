@@ -131,7 +131,6 @@ export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
       clearTimeout(stateTimer.current);
       clearTimeout(deadTimer.current);
       clearTimeout(spawnTimer.current);
-      console.log("mole", id, " killed itself")
     }
 
   return (
@@ -149,7 +148,6 @@ export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
       }
       pointerdown={() => {
         //upon being clicked, start timer to die and change state, emit hit event with mole id
-        console.log("WHACK!");
         setMoleState(moleStates.dying);
         setStateTimer(moleStates.dead);
         setMoleImage(moleStandardHit);
