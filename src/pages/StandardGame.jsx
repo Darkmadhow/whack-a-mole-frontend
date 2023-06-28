@@ -149,7 +149,7 @@ export default function StandardGame() {
 
     console.log('molecounter:', molecounter);
     //increase difficulty every 10 moles
-    if (!(molecounter % 3)) {
+    if (!(molecounter % 10)) {
       haste.current *= 1.03;
       console.log('Difficulty increased');
       gameObserver.current.emit('reset_incoming');

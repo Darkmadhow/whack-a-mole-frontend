@@ -69,7 +69,6 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
   */
   useEffect(() => {
     console.log('mole', my_id.current, 'mounted');
-    setMoleState(moleStates.dead);
     emitter.on('reset_incoming', stopAllTimeouts);
 
     spawnTimer.current = setTimeout(() => {
@@ -88,13 +87,6 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
       stopAllTimeouts();
 
       console.log('mole', my_id.current, 'unmounted');
-      // console.log(
-      //   aliveTimer.current,
-      //   downTimer.current,
-      //   stateTimer.current,
-      //   deadTimer.current,
-      //   spawnTimer.current
-      // );
     };
   }, []);
 
@@ -135,28 +127,12 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
     param: e, the event that triggeres the mole hit
    */
   function stopAllTimeouts(e) {
-    // console.log(
-    //   'before',
-    //   aliveTimer.current,
-    //   downTimer.current,
-    //   stateTimer.current,
-    //   deadTimer.current,
-    //   spawnTimer.current
-    // );
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
     clearTimeout(stateTimer.current);
     clearTimeout(deadTimer.current);
     clearTimeout(spawnTimer.current);
     console.log('mole', my_id.current, ' killed itself');
-    // console.log(
-    //   'after',
-    //   aliveTimer.current,
-    //   downTimer.current,
-    //   stateTimer.current,
-    //   deadTimer.current,
-    //   spawnTimer.current
-    // );
   }
 
   return (

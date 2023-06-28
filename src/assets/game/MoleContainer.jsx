@@ -8,7 +8,6 @@ import MoleBunny from './MoleBunny';
 export default function MoleContainer({
   emitter,
   id,
-  moleType,
   xInit,
   yInit,
   moles,
@@ -45,7 +44,7 @@ export default function MoleContainer({
         break;
     }
     console.log('new mole will be a ', newMole, rnd);
-    // moles.splice(e.id, 1, newMole);
+
     moles[e.id].moleType = newMole;
     moles[e.id].key++;
     setMoles(moles);
@@ -54,39 +53,6 @@ export default function MoleContainer({
       return { ...prev, [e.id]: prev[e.id] + 1 };
     });
   }
-
-  // function replaceAllMoles() {
-  //   const rnd = Math.floor(Math.random() * 13);
-  //   let newMole = 'standard';
-  //   switch (rnd) {
-  //     case 0:
-  //     case 1:
-  //       newMole = 'peeker';
-  //       break;
-  //     case 2:
-  //     case 3:
-  //       newMole = 'hardhat';
-  //       break;
-  //     case 4:
-  //       newMole = 'golden';
-  //       break;
-  //     case 5:
-  //     case 6:
-  //       newMole = 'bunny';
-  //       break;
-  //     default:
-  //       newMole = 'standard';
-  //       break;
-  //   }
-  //   // const newMoles = moles.splice(id, 1, newMole);
-  //   // setMoles((prev) => prev.toSpliced(id, 1, newMole));
-  //   moles[id].moleType = newMole;
-  //   moles[id].key++;
-  //   setMoles(moles);
-
-  //   console.log('RESET: replaced mole on reset: ', id, 'with', newMole);
-  //   console.log('old moles: ', moles);
-  // }
 
   //if my mole dies, replace it with a new one
   useEffect(() => {
@@ -97,14 +63,6 @@ export default function MoleContainer({
       // emitter.off('reset', replaceAllMoles);
     };
   }, []);
-
-  // useEffect(() => {
-  //   console.log('Moles changed in', id, 'Key:', moles[id].key, 'Moles:', moles);
-  // }, [moles]);
-
-  // useEffect(() => {
-  //   console.log('Moletype changed in', id, 'Moletype:', moleType);
-  // }, [moleType]);
 
   //depending on the moleType, create a different mole
   switch (moles[id].moleType) {
