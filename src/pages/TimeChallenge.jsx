@@ -18,15 +18,19 @@ import { UserContext } from '../userContext';
 import Reticle from '../assets/game/Reticle';
 import UpgradeModal from '../components/UpgradeModal';
 
-export default function StandardGame() {
+export default function TimeChallenge() {
   const [stage, setStage] = useState();
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
   //initial score and lives
+  const startTime = useRef(Date.now());
+  const [time, setTime] = useState(120);
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(5);
+  // const [lives, setLives] = useState(5);
   //difficulty speed multiplier
   const haste = useRef(1);
+
+  const gameTimer = useRef(null);
 
   //subscribe to mole events
   const { token } = useContext(UserContext);
@@ -34,20 +38,34 @@ export default function StandardGame() {
     gameObserver.current.on('dead', updateScore);
     gameObserver.current.on('evaded', subtractLife);
     gameObserver.current.on('reset', replaceAllMoles);
+
+    gameTimer.current = setInterval(
+      () => setTime(time - Math.floor((Date.now() - startTime.current) / 1000)),
+      1000
+    );
     return () => {
       gameObserver.current.off('dying', updateScore);
       gameObserver.current.off('evaded', subtractLife);
       gameObserver.current.off('reset', replaceAllMoles);
+
+      clearInterval(gameTimer);
     };
   }, []);
 
   function updateScore(e) {
+    console.log('updateScore:', e);
     setScore((prev) => prev + e.value);
+    setTime((prev) => prev + e.value / 100);
   }
 
-  const subtractLife = useCallback(() => {
-    setLives((prev) => prev - 1);
-  }, [lives]);
+  // function subtractLife(e) {
+  //   console.log('subtractLife:', e);
+  // }
+
+  const subtractLife = useCallback((e) => {
+    console.log('subtractLife:', e);
+    // setTime((prev) => prev - e.value / 100);
+  }, []);
 
   //counter for the moles in each hole, as iterable object
   const [mole_count, setMoleCount] = useState({
@@ -164,7 +182,7 @@ export default function StandardGame() {
   }, [mole_count]);
 
   //game over at 0 lives
-  if (lives <= 0) {
+  if (time <= 0) {
     uploadHighScore(token, { score: score, gamemode: 'standard' });
 
     return (
@@ -186,7 +204,10 @@ export default function StandardGame() {
       <div className="game-stats">
         <NavLink to="/modeselection">Back</NavLink>
         <div className="score-display">Score: {score}</div>
-        <div className="lives">Lives: {lives}</div>
+        <div className="lives">Time: {time}</div>
+      </div>
+      <div>
+        <h1>TimeChallenge</h1>
       </div>
       <Stage {...stageProps} onMount={setStage}>
         <Container sortableChildren={true}>

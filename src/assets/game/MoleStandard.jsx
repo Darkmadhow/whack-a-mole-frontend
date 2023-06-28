@@ -84,7 +84,6 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
       // clearTimeout(spawnTimer.current);
 
       stopAllTimeouts();
-
     };
   }, []);
 
@@ -103,7 +102,7 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit('evaded');
+      emitter.emit('evaded', { value: 100 });
       time.current = 0;
       downTimer.current = setTimeout(() => {
         setStateTimer(moleStates.alive);

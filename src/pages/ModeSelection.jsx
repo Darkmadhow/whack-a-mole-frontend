@@ -1,7 +1,7 @@
-import React from "react";
-import NavBar from "../components/NavBar";
-import { Link } from "react-router-dom";
-import "../styles/modeSelection.css";
+import React from 'react';
+import NavBar from '../components/NavBar';
+import { Link } from 'react-router-dom';
+import '../styles/modeSelection.css';
 
 export default function ModeSelection() {
   return (
@@ -12,7 +12,7 @@ export default function ModeSelection() {
         <Link to="/standardGame">
           <button>Standard</button>
         </Link>
-        <Link to="/">
+        <Link to="/timeChallenge">
           <button>Time Challenge</button>
         </Link>
         <Link to="/">
