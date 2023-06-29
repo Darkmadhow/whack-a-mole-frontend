@@ -13,9 +13,9 @@ export default function ScoreTable({ personal, gamemode }) {
   useEffect(() => {
     (async () => {
       if (!personal || (personal && user))
-        setScores(await getHighscores(token, personal ? user : null));
+        setScores(await getHighscores(token, personal ? user : null, gamemode));
     })();
-  }, [user]);
+  }, [gamemode]);
 
   if (!isAuthenticated) {
     alert("Please login to see Highscores");
