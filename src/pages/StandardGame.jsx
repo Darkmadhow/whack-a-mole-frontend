@@ -250,14 +250,11 @@ export default function StandardGame() {
     const currentIndex = upgrades.findIndex(
       (upgrade) => upgrade.name === rightClickDeploy.name
     );
-    console.log("before filter: ", chosenUpgrades);
-    console.log("after filter: ", upgrades);
-    console.log(currentIndex);
     if (currentIndex !== -1) {
-      const nextIndex = (currentIndex + scrollDirection) % upgrades.length;
+      const nextIndex =
+        (currentIndex + scrollDirection + upgrades.length) % upgrades.length;
       const nextUpgrade = upgrades[nextIndex];
       setRightClickDeploy(nextUpgrade);
-      console.log("Switched to: ", nextUpgrade);
     }
   }
 
