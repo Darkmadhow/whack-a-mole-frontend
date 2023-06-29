@@ -156,7 +156,7 @@ export default function MoleBunny({ xInit, yInit, emitter, id, haste }) {
         deadTimer.current = setTimeout(() => {
           // if the bunny is killed, use evaded message to subtract a life
           emitter.emit("dead", { id: my_id.current, value: my_value.current });
-          emitter.emit("evaded");
+          emitter.emit("evaded", { value: my_value.current });
         }, 505 / haste);
       }}
     ></Sprite>

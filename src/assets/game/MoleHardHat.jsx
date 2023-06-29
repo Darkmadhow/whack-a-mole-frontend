@@ -13,7 +13,7 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
   const my_value = useRef(500); //Standard Mole point value
   const my_decay = 250; //Decay rate of point value
   const jumpHeight = -145;
-  const [stay_alive, stay_down] = [4000/haste, 1000/haste]; //Hardhat moles stay up for 4s base and down for 1s
+  const [stay_alive, stay_down] = [4000 / haste, 1000 / haste]; //Hardhat moles stay up for 4s base and down for 1s
   const [life, setLife] = useState(1);
 
   const spawnTimer = useRef(null);
@@ -59,8 +59,8 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
     returns: a random integer between min and max to use in a spawn timeout
   */
   const getRandomTimeout = () => {
-    const min = 1000/haste;
-    const max = 7000/haste;
+    const min = 1000 / haste;
+    const max = 7000 / haste;
     return Math.floor(Math.random() * max - min + 1) + min;
   };
 
@@ -69,7 +69,7 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
   */
   useEffect(() => {
     emitter.on("reset_incoming", stopAllTimeouts);
-  
+
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
@@ -100,7 +100,7 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded");
+      emitter.emit("evaded", { value: my_value.current });
       time.current = 0;
       downTimer.current = setTimeout(() => {
         setStateTimer(moleStates.alive);
@@ -114,19 +114,19 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
   param: state, the state into which the mole will switch into after timer expires
   */
   function setStateTimer(state) {
-    stateTimer.current = setTimeout(() => setMoleState(state), 500/haste);
+    stateTimer.current = setTimeout(() => setMoleState(state), 500 / haste);
   }
 
-   /*
+  /*
     stopAllTimeouts deletes all running timers in preparation of a stage reset
     param: e, the event that triggeres the mole hit
    */
-    function stopAllTimeouts(e) {
-      clearTimeout(aliveTimer.current);
-      clearTimeout(downTimer.current);
-      clearTimeout(stateTimer.current);
-      clearTimeout(spawnTimer.current);
-    }
+  function stopAllTimeouts(e) {
+    clearTimeout(aliveTimer.current);
+    clearTimeout(downTimer.current);
+    clearTimeout(stateTimer.current);
+    clearTimeout(spawnTimer.current);
+  }
 
   return (
     <Sprite
@@ -144,10 +144,9 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
       pointerdown={() => {
         if (life > 0) {
           //TODO: animate hat flying off
-          setLife((prev) => prev - 1); 
-          setMoleImage(moleStandard)
-        }
-        else {
+          setLife((prev) => prev - 1);
+          setMoleImage(moleStandard);
+        } else {
           //upon being clicked, start timer to die and change state, emit hit event with mole id
           setMoleState(moleStates.dying);
           setStateTimer(moleStates.dead);
@@ -157,13 +156,13 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
           emitter.emit("dying", {
             id: my_id.current,
             value: my_value.current,
-          })
+          });
           deadTimer.current = setTimeout(() => {
             emitter.emit("dead", {
               id: my_id.current,
               value: my_value.current,
             });
-          }, 505/haste);
+          }, 505 / haste);
         }
       }}
     ></Sprite>

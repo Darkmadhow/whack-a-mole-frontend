@@ -99,7 +99,7 @@ export default function MolePeeker({ xInit, yInit, emitter, id, haste }) {
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded");
+      emitter.emit("evaded", { value: my_value.current });
       time.current = 0;
       downTimer.current = setTimeout(() => {
         setStateTimer(moleStates.alive);
