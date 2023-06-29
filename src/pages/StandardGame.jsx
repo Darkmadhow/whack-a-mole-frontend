@@ -60,6 +60,7 @@ export default function StandardGame() {
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
   const [rightClickDeploy, setRightClickDeploy] = useState(null);
+  const gameDiv = useRef();
 
   //subscribe to mole events
   const { token } = useContext(UserContext);
@@ -67,6 +68,7 @@ export default function StandardGame() {
     gameObserver.current.on("dead", updateScore);
     gameObserver.current.on("evaded", subtractLife);
     gameObserver.current.on("reset", replaceAllMoles);
+
     return () => {
       gameObserver.current.off("dead", updateScore);
       gameObserver.current.off("evaded", subtractLife);
@@ -185,7 +187,7 @@ export default function StandardGame() {
 
     //increase difficulty every 10 moles, open modal to offer an upgrade
     if (!(molecounter % 10)) haste.current *= 1.03;
-    if (!(molecounter % 20)) {
+    if (!(molecounter % 5)) {
       const options = getUpgradeOptions();
       if (!options) return;
       gameObserver.current.off("evaded", subtractLife);
@@ -223,21 +225,36 @@ export default function StandardGame() {
     return [optionA, optionB];
   }
 
+  //runs cycleRightClickDeploy upon user scrolling the mouse
+  function handleMousewheel(e) {
+    // e.preventDefault();
+    cycleRightClickDeploy(e.deltaY);
+  }
+
   /*
    * cycleRightClickDeploy: sets the current deployable object to the next one in the chosenUpgrades Array, excluding hammer upgrades
    */
-  function cycleRightClickDeploy() {
-    console.log("cycling");
+  function cycleRightClickDeploy(deltaY) {
+    const scrollDirection = deltaY < 0 ? -1 : 1;
+    //exclude hammer upgrades
     const upgrades = chosenUpgrades.filter(
       (upgrade) =>
         upgrade.name !== "spike_hammer" && upgrade.name !== "rocket_hammer"
     );
+    //if there's just one upgrade, pick that
+    if (upgrades.length == 1) {
+      setRightClickDeploy(upgrades[0]);
+      return;
+    }
+    //otherwise, look for others to scroll to
     const currentIndex = upgrades.findIndex(
       (upgrade) => upgrade.name === rightClickDeploy.name
     );
-
+    console.log("before filter: ", chosenUpgrades);
+    console.log("after filter: ", upgrades);
+    console.log(currentIndex);
     if (currentIndex !== -1) {
-      const nextIndex = (currentIndex + 1) % upgrades.length;
+      const nextIndex = (currentIndex + scrollDirection) % upgrades.length;
       const nextUpgrade = upgrades[nextIndex];
       setRightClickDeploy(nextUpgrade);
       console.log("Switched to: ", nextUpgrade);
@@ -316,7 +333,7 @@ export default function StandardGame() {
   /* ------------------------------ VISUAL OUTPUT ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
   //game over at 0 lives
-  if (lives <= 0) {
+  if (lives <= -100) {
     //upload Highscore to the backend
     uploadHighScore(token, { score: score, gamemode: "standard" });
 
@@ -341,7 +358,7 @@ export default function StandardGame() {
   }
 
   return (
-    <div className="game">
+    <div className="game" onWheel={handleMousewheel}>
       <div className="game-stats">
         <NavLink to="/modeselection">Back</NavLink>
         <div className="score-display">Score: {score}</div>
