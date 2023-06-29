@@ -4,7 +4,7 @@ import reticle from "../img/reticle.png";
 import { Rectangle } from "pixi.js";
 
 export default function Reticle() {
-  const [[x,y], setCoords] = useState([0,0])
+  const [[x, y], setCoords] = useState([0, 0]);
 
   function moveReticle(e) {
     const pos = e.data.global;

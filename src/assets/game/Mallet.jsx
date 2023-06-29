@@ -18,7 +18,6 @@ export default function Mallet({ chosenUpgrades }) {
   //if the player chooses an upgrade, update the graphics if it was a mallet upgrade
   useEffect(() => {
     //search the array for mallet upgrades
-    let foundUpgrade = "";
     if (chosenUpgrades.some((upgrade) => upgrade.name === "spike_hammer")) {
       setUpgradedMallet("spike_hammer");
     } else if (

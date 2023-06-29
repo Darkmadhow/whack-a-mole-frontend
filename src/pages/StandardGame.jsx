@@ -58,6 +58,8 @@ export default function StandardGame() {
       { name: "trap", asset: trap },
       { name: "drone", asset: droneHammer },
     ]);
+  //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
+  const [rightClickDeploy, setRightClickDeploy] = useState(null);
 
   //subscribe to mole events
   const { token } = useContext(UserContext);
@@ -217,6 +219,27 @@ export default function StandardGame() {
       ];
 
     return [optionA, optionB];
+  }
+
+  /*
+   * cycleRightClickDeploy: sets the current deployable object to the next one in the chosenUpgrades Array, excluding hammer upgrades
+   */
+  function cycleRightClickDeploy() {
+    console.log("cycling");
+    const upgrades = chosenUpgrades.filter(
+      (upgrade) =>
+        upgrade.name !== "spike_hammer" && upgrade.name !== "rocket_hammer"
+    );
+    const currentIndex = upgrades.findIndex(
+      (upgrade) => upgrade.name === rightClickDeploy.name
+    );
+
+    if (currentIndex !== -1) {
+      const nextIndex = (currentIndex + 1) % upgrades.length;
+      const nextUpgrade = upgrades[nextIndex];
+      setRightClickDeploy(nextUpgrade);
+      console.log("Switched to: ", nextUpgrade);
+    }
   }
 
   /*
