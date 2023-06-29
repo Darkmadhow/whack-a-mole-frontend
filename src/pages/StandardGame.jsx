@@ -127,6 +127,9 @@ export default function StandardGame() {
         case 7:
           newMole = "shroom";
           break;
+        case 7:
+          newMole = "shroom";
+          break;
         default:
           newMole = "standard";
           break;
