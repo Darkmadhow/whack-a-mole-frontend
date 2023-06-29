@@ -3,7 +3,14 @@ import { Sprite, useTick } from "@pixi/react";
 import moleStandard from "../img/mole.png";
 import moleStandardHit from "../img/mole_hit.png";
 
-export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
+export default function MoleStandard({
+  xInit,
+  yInit,
+  emitter,
+  id,
+  haste,
+  activeUpgrades,
+}) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
   const [moleImage, setMoleImage] = useState(moleStandard);
@@ -131,6 +138,19 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
     clearTimeout(spawnTimer.current);
   }
 
+  function killMole() {
+    //upon being clicked, start timer to die and change state, emit hit event with mole id
+    setMoleState(moleStates.dying);
+    setStateTimer(moleStates.dead);
+    setMoleImage(moleStandardHit);
+    clearTimeout(aliveTimer.current);
+    clearTimeout(downTimer.current);
+    deadTimer.current = setTimeout(() => {
+      // console.log(my_id.current, " died");
+      emitter.emit("dead", { id: my_id.current, value: my_value.current });
+    }, 505 / haste);
+  }
+
   return (
     <Sprite
       image={moleImage}
@@ -144,18 +164,7 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
           ? "none"
           : "static"
       }
-      pointerdown={() => {
-        //upon being clicked, start timer to die and change state, emit hit event with mole id
-        setMoleState(moleStates.dying);
-        setStateTimer(moleStates.dead);
-        setMoleImage(moleStandardHit);
-        clearTimeout(aliveTimer.current);
-        clearTimeout(downTimer.current);
-        deadTimer.current = setTimeout(() => {
-          // console.log(my_id.current, " died");
-          emitter.emit("dead", { id: my_id.current, value: my_value.current });
-        }, 505 / haste);
-      }}
+      pointerdown={killMole}
     ></Sprite>
   );
 }

@@ -3,7 +3,14 @@ import { Sprite, useTick } from "@pixi/react";
 import moleGolden from "../img/mole_golden.png";
 import moleGoldenHit from "../img/mole_golden_hit.png";
 
-export default function MoleGolden({ xInit, yInit, emitter, id, haste }) {
+export default function MoleGolden({
+  xInit,
+  yInit,
+  emitter,
+  id,
+  haste,
+  activeUpgrades,
+}) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
   const [moleImage, setMoleImage] = useState(moleGolden);
@@ -13,6 +20,9 @@ export default function MoleGolden({ xInit, yInit, emitter, id, haste }) {
   const my_decay = 800; //Decay rate of point value
   const jumpHeight = -125;
   const [stay_alive, stay_down] = [1000 / haste, 1000 / haste]; //Golden moles stay up for 1s base and down for 1s
+  const spikedHammer = activeUpgrades.some(
+    (upgrade) => upgrade.name === "spike_hammer"
+  ); //golden mole needs to know wether spiked Hammer is active or not
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -128,6 +138,22 @@ export default function MoleGolden({ xInit, yInit, emitter, id, haste }) {
     clearTimeout(spawnTimer.current);
   }
 
+  function killMole() {
+    //upon being clicked, start timer to die and change state, emit hit event with mole id
+    setMoleState(moleStates.dying);
+    setStateTimer(moleStates.dead);
+    setMoleImage(moleGoldenHit);
+    clearTimeout(aliveTimer.current);
+    clearTimeout(downTimer.current);
+    deadTimer.current = setTimeout(() => {
+      // console.log(my_id.current, " died");
+      emitter.emit("dead", {
+        id: my_id.current,
+        value: spikedHammer ? my_value.current * 1.5 : my_value.current,
+      });
+    }, 505 / haste);
+  }
+
   return (
     <Sprite
       image={moleImage}
@@ -141,18 +167,7 @@ export default function MoleGolden({ xInit, yInit, emitter, id, haste }) {
           ? "none"
           : "static"
       }
-      pointerdown={() => {
-        //upon being clicked, start timer to die and change state, emit hit event with mole id
-        setMoleState(moleStates.dying);
-        setStateTimer(moleStates.dead);
-        setMoleImage(moleGoldenHit);
-        clearTimeout(aliveTimer.current);
-        clearTimeout(downTimer.current);
-        deadTimer.current = setTimeout(() => {
-          // console.log(my_id.current, " died");
-          emitter.emit("dead", { id: my_id.current, value: my_value.current });
-        }, 505 / haste);
-      }}
+      pointerdown={killMole}
     ></Sprite>
   );
 }

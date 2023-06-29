@@ -14,7 +14,7 @@ import { uploadHighScore } from "../utils/scores";
 import UpgradeModal from "../components/UpgradeModal";
 import MoleHole from "../assets/game/MoleHole";
 import MoleContainer from "../assets/game/MoleContainer";
-import MalletStandard from "../assets/game/MalletStandard";
+import Mallet from "../assets/game/Mallet";
 import Reticle from "../assets/game/Reticle";
 import rocketHammer from "../assets/img/mallet_rocket.png";
 import spikeHammer from "../assets/img/mallet_spikey.png";
@@ -62,7 +62,7 @@ export default function StandardGame() {
     gameObserver.current.on("evaded", subtractLife);
     gameObserver.current.on("reset", replaceAllMoles);
     return () => {
-      gameObserver.current.off("dying", updateScore);
+      gameObserver.current.off("dead", updateScore);
       gameObserver.current.off("evaded", subtractLife);
       gameObserver.current.off("reset", replaceAllMoles);
     };
@@ -319,7 +319,7 @@ export default function StandardGame() {
       <Stage {...stageProps} onMount={setStage}>
         <Container sortableChildren={true}>
           <Sprite texture={Texture.WHITE} width={1} height={1} />
-          <MalletStandard />
+          <Mallet chosenUpgrades={chosenUpgrades} />
           <Reticle />
           {/* Hole Nr. 0 */}
           <Container sortableChildren={true} mask={hole_masks.current[0]}>
@@ -335,6 +335,7 @@ export default function StandardGame() {
               setMoleCount={setMoleCount}
               // key={moles[0].key}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
             />
             <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
           </Container>
@@ -352,6 +353,7 @@ export default function StandardGame() {
               setMoleCount={setMoleCount}
               // key={moles[1].key}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
             />
             <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
           </Container>
@@ -369,6 +371,7 @@ export default function StandardGame() {
               setMoleCount={setMoleCount}
               // key={moles[2].key}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
             />
             <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
           </Container>
@@ -386,6 +389,7 @@ export default function StandardGame() {
               setMoleCount={setMoleCount}
               // key={moles[3].key}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
             />
             <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
           </Container>
@@ -403,6 +407,7 @@ export default function StandardGame() {
               setMoleCount={setMoleCount}
               // key={moles[4].key]}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
             />
             <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
           </Container>

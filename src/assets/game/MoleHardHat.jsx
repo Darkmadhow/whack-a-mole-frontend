@@ -4,7 +4,14 @@ import moleHardHat from "../img/mole_hardhat.png";
 import moleStandard from "../img/mole.png";
 import moleStandardHit from "../img/mole_hit.png";
 
-export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
+export default function MoleHardHat({
+  xInit,
+  yInit,
+  emitter,
+  id,
+  haste,
+  activeUpgrades,
+}) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
   const [moleImage, setMoleImage] = useState(moleHardHat);
@@ -15,6 +22,9 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
   const jumpHeight = -145;
   const [stay_alive, stay_down] = [4000 / haste, 1000 / haste]; //Hardhat moles stay up for 4s base and down for 1s
   const [life, setLife] = useState(1);
+  const spikedHammer = activeUpgrades.some(
+    (upgrade) => upgrade.name === "spike_hammer"
+  ); //hardhat mole needs to know wether spiked Hammer is active or not
 
   const spawnTimer = useRef(null);
   const aliveTimer = useRef(null);
@@ -128,6 +138,25 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
     clearTimeout(spawnTimer.current);
   }
 
+  function killMole() {
+    //upon being clicked, start timer to die and change state, emit hit event with mole id
+    setMoleState(moleStates.dying);
+    setStateTimer(moleStates.dead);
+    setMoleImage(moleStandardHit);
+    clearTimeout(aliveTimer.current);
+    clearTimeout(downTimer.current);
+    emitter.emit("dying", {
+      id: my_id.current,
+      value: my_value.current,
+    });
+    deadTimer.current = setTimeout(() => {
+      emitter.emit("dead", {
+        id: my_id.current,
+        value: my_value.current,
+      });
+    }, 505 / haste);
+  }
+
   return (
     <Sprite
       image={moleImage}
@@ -143,26 +172,16 @@ export default function MoleHardHat({ xInit, yInit, emitter, id, haste }) {
       }
       pointerdown={() => {
         if (life > 0) {
+          //if the player chose the spiked hammer, hardhat mole dies in one hit
+          if (spikedHammer) {
+            killMole();
+            return;
+          }
           //TODO: animate hat flying off
           setLife((prev) => prev - 1);
           setMoleImage(moleStandard);
         } else {
-          //upon being clicked, start timer to die and change state, emit hit event with mole id
-          setMoleState(moleStates.dying);
-          setStateTimer(moleStates.dead);
-          setMoleImage(moleStandardHit);
-          clearTimeout(aliveTimer.current);
-          clearTimeout(downTimer.current);
-          emitter.emit("dying", {
-            id: my_id.current,
-            value: my_value.current,
-          });
-          deadTimer.current = setTimeout(() => {
-            emitter.emit("dead", {
-              id: my_id.current,
-              value: my_value.current,
-            });
-          }, 505 / haste);
+          killMole();
         }
       }}
     ></Sprite>
