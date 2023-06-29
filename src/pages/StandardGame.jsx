@@ -4,25 +4,25 @@ import React, {
   useEffect,
   useContext,
   useCallback,
-} from "react";
-import { NavLink } from "react-router-dom";
-import { Stage, Sprite, Container } from "@pixi/react";
-import { Texture, Graphics } from "pixi.js";
-import { EventEmitter } from "@pixi/utils";
-import { UserContext } from "../userContext";
-import { uploadHighScore } from "../utils/scores";
-import UpgradeModal from "../components/UpgradeModal";
-import MoleHole from "../assets/game/MoleHole";
-import MoleContainer from "../assets/game/MoleContainer";
-import Mallet from "../assets/game/Mallet";
-import Reticle from "../assets/game/Reticle";
-import rocketHammer from "../assets/img/mallet_rocket.png";
-import spikeHammer from "../assets/img/mallet_spikey.png";
-import droneHammer from "../assets/img/drone.png";
-import bomb from "../assets/img/bomb.png";
-import cover from "../assets/img/cover.png";
-import trap from "../assets/img/trap.png";
-import "../styles/game.css";
+} from 'react';
+import { NavLink } from 'react-router-dom';
+import { Stage, Sprite, Container } from '@pixi/react';
+import { Texture, Graphics } from 'pixi.js';
+import { EventEmitter } from '@pixi/utils';
+import { UserContext } from '../userContext';
+import { uploadHighScore } from '../utils/scores';
+import UpgradeModal from '../components/UpgradeModal';
+import MoleHole from '../assets/game/MoleHole';
+import MoleContainer from '../assets/game/MoleContainer';
+import Mallet from '../assets/game/Mallet';
+import Reticle from '../assets/game/Reticle';
+import rocketHammer from '../assets/img/mallet_rocket.png';
+import spikeHammer from '../assets/img/mallet_spikey.png';
+import droneHammer from '../assets/img/drone.png';
+import bomb from '../assets/img/bomb.png';
+import cover from '../assets/img/cover.png';
+import trap from '../assets/img/trap.png';
+import '../styles/game.css';
 
 export default function StandardGame() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
@@ -41,11 +41,14 @@ export default function StandardGame() {
   const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
   const swingTimerDuration = 800; //the swing timer cooldown in ms
 
+  //isGameOver
+  const [isGameOver, setIsGameOver] = useState(false);
+
   //the upgrades chosen by the user stored as string array and available upgrades
   const [chosenUpgrades, setChosenUpgrades] = useState([]);
   const [availableHammerUpgrades, setAvailableHammerUpgrades] = useState([
-    { name: "rocket_hammer", asset: rocketHammer },
-    { name: "spike_hammer", asset: spikeHammer },
+    { name: 'rocket_hammer', asset: rocketHammer },
+    { name: 'spike_hammer', asset: spikeHammer },
   ]);
   const [[option1, option2], setOptions] = useState([
     { name: null, asset: null },
@@ -53,10 +56,10 @@ export default function StandardGame() {
   ]);
   const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
     useState([
-      { name: "bomb", asset: bomb },
-      { name: "cover", asset: cover },
-      { name: "trap", asset: trap },
-      { name: "drone", asset: droneHammer },
+      { name: 'bomb', asset: bomb },
+      { name: 'cover', asset: cover },
+      { name: 'trap', asset: trap },
+      { name: 'drone', asset: droneHammer },
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
   const [rightClickDeploy, setRightClickDeploy] = useState(null);
@@ -65,14 +68,14 @@ export default function StandardGame() {
   //subscribe to mole events
   const { token } = useContext(UserContext);
   useEffect(() => {
-    gameObserver.current.on("dead", updateScore);
-    gameObserver.current.on("evaded", subtractLife);
-    gameObserver.current.on("reset", replaceAllMoles);
+    gameObserver.current.on('dead', updateScore);
+    gameObserver.current.on('evaded', subtractLife);
+    gameObserver.current.on('reset', replaceAllMoles);
 
     return () => {
-      gameObserver.current.off("dead", updateScore);
-      gameObserver.current.off("evaded", subtractLife);
-      gameObserver.current.off("reset", replaceAllMoles);
+      gameObserver.current.off('dead', updateScore);
+      gameObserver.current.off('evaded', subtractLife);
+      gameObserver.current.off('reset', replaceAllMoles);
     };
   }, []);
 
@@ -85,6 +88,17 @@ export default function StandardGame() {
   const subtractLife = useCallback(() => {
     setLives((prev) => prev - 1);
   }, [lives]);
+
+  useEffect(() => {
+    if (lives <= 0) setIsGameOver(true);
+  }, [lives]);
+
+  useEffect(() => {
+    if (isGameOver) {
+      uploadHighScore(token, { score: score, gamemode: 'standard' });
+      console.log('uploadHighScore:', score);
+    }
+  }, [isGameOver]);
 
   /* ------------------------------ MOLE HANDLING ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
@@ -99,38 +113,38 @@ export default function StandardGame() {
 
   //current mole type in each hole, as a string array
   const [moles, setMoles] = useState([
-    { moleType: "standard", key: 1000 },
-    { moleType: "standard", key: 2000 },
-    { moleType: "standard", key: 3000 },
-    { moleType: "standard", key: 4000 },
-    { moleType: "standard", key: 5000 },
+    { moleType: 'standard', key: 1000 },
+    { moleType: 'standard', key: 2000 },
+    { moleType: 'standard', key: 3000 },
+    { moleType: 'standard', key: 4000 },
+    { moleType: 'standard', key: 5000 },
   ]);
 
   function replaceAllMoles() {
     const molesTemp = moles.map((mole) => {
       const rnd = Math.floor(Math.random() * 13);
-      let newMole = "standard";
+      let newMole = 'standard';
       switch (rnd) {
         case 0:
         case 1:
-          newMole = "peeker";
+          newMole = 'peeker';
           break;
         case 2:
         case 3:
-          newMole = "hardhat";
+          newMole = 'hardhat';
           break;
         case 4:
-          newMole = "golden";
+          newMole = 'golden';
           break;
         case 5:
         case 6:
-          newMole = "bunny";
+          newMole = 'bunny';
           break;
         case 7:
-          newMole = "shroom";
+          newMole = 'shroom';
           break;
         default:
-          newMole = "standard";
+          newMole = 'standard';
           break;
       }
 
@@ -190,9 +204,9 @@ export default function StandardGame() {
     if (!(molecounter % 5)) {
       const options = getUpgradeOptions();
       if (!options) return;
-      gameObserver.current.off("evaded", subtractLife);
+      gameObserver.current.off('evaded', subtractLife);
       setLevel((prev) => prev + 1);
-      gameObserver.current.emit("reset_incoming");
+      gameObserver.current.emit('reset_incoming');
       setOptions(options);
       stage.stop();
       setTimeout(() => {
@@ -239,7 +253,7 @@ export default function StandardGame() {
     //exclude hammer upgrades
     const upgrades = chosenUpgrades.filter(
       (upgrade) =>
-        upgrade.name !== "spike_hammer" && upgrade.name !== "rocket_hammer"
+        upgrade.name !== 'spike_hammer' && upgrade.name !== 'rocket_hammer'
     );
     //if there's just one upgrade, pick that
     if (upgrades.length == 1) {
@@ -330,10 +344,7 @@ export default function StandardGame() {
   /* ------------------------------ VISUAL OUTPUT ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
   //game over at 0 lives
-  if (lives <= -100) {
-    //upload Highscore to the backend
-    uploadHighScore(token, { score: score, gamemode: "standard" });
-
+  if (isGameOver) {
     return (
       <div className="game">
         <div className="game-over-screen">
