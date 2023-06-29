@@ -23,10 +23,8 @@ export default function TimeChallenge() {
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
   //initial score and lives
-  const startTime = useRef(Date.now());
-  const [time, setTime] = useState(120);
   const [score, setScore] = useState(0);
-  // const [lives, setLives] = useState(5);
+  const [time, setTime] = useState(120);
   //difficulty speed multiplier
   const haste = useRef(1);
 
@@ -36,35 +34,38 @@ export default function TimeChallenge() {
   const { token } = useContext(UserContext);
   useEffect(() => {
     gameObserver.current.on('dead', updateScore);
-    gameObserver.current.on('evaded', subtractLife);
+    gameObserver.current.on('evaded', substractTime);
     gameObserver.current.on('reset', replaceAllMoles);
 
-    gameTimer.current = setInterval(
-      () => setTime(time - Math.floor((Date.now() - startTime.current) / 1000)),
-      1000
-    );
+    gameTimer.current = setInterval(() => {
+      setTime((prev) => prev - 1);
+    }, 1000);
+
+    console.log('mount: start gameTimer:', gameTimer.current);
     return () => {
       gameObserver.current.off('dying', updateScore);
-      gameObserver.current.off('evaded', subtractLife);
+      gameObserver.current.off('evaded', substractTime);
       gameObserver.current.off('reset', replaceAllMoles);
 
-      clearInterval(gameTimer);
+      clearInterval(gameTimer.current);
+      console.log('unmount: clear gameTimer', gameTimer.current);
     };
   }, []);
 
   function updateScore(e) {
-    console.log('updateScore:', e);
-    setScore((prev) => prev + e.value);
-    setTime((prev) => prev + e.value / 100);
+    const score = e.value < 0 ? 0 : e.value;
+    const timeToAdd = Math.floor(e.value / 100);
+    console.log('updateScore:', e, 'Time added:', timeToAdd);
+    setScore((prev) => prev + score);
+    setTime((prev) => prev + timeToAdd);
   }
 
-  // function subtractLife(e) {
-  //   console.log('subtractLife:', e);
-  // }
-
-  const subtractLife = useCallback((e) => {
-    console.log('subtractLife:', e);
-    // setTime((prev) => prev - e.value / 100);
+  const substractTime = useCallback((e) => {
+    if (e) {
+      const timeToSubstract = ((100 - e.value) / 10) * 4;
+      console.log('substractTime:', timeToSubstract);
+      setTime((prev) => prev - timeToSubstract);
+    }
   }, []);
 
   //counter for the moles in each hole, as iterable object
@@ -173,7 +174,7 @@ export default function TimeChallenge() {
 
     //increase difficulty every 10 moles
     if (!(molecounter % 10)) {
-      gameObserver.current.off('evaded', subtractLife);
+      gameObserver.current.off('evaded', substractTime);
       haste.current *= 1.03;
       gameObserver.current.emit('reset_incoming');
       stage.stop();
@@ -183,7 +184,10 @@ export default function TimeChallenge() {
 
   //game over at 0 lives
   if (time <= 0) {
-    uploadHighScore(token, { score: score, gamemode: 'standard' });
+    uploadHighScore(token, { score: score, gamemode: 'time' });
+    console.log('uploadHighScore:', token, score);
+    clearInterval(gameTimer.current);
+    console.log('game over: clear gameTimer', gameTimer.current);
 
     return (
       <div className="game">
@@ -205,9 +209,6 @@ export default function TimeChallenge() {
         <NavLink to="/modeselection">Back</NavLink>
         <div className="score-display">Score: {score}</div>
         <div className="lives">Time: {time}</div>
-      </div>
-      <div>
-        <h1>TimeChallenge</h1>
       </div>
       <Stage {...stageProps} onMount={setStage}>
         <Container sortableChildren={true}>
@@ -304,7 +305,7 @@ export default function TimeChallenge() {
       <UpgradeModal
         stage={stage}
         gameObserver={gameObserver}
-        subtractLife={subtractLife}
+        subtractLife={substractTime}
       />
     </div>
   );

@@ -102,7 +102,7 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit('evaded', { value: 100 });
+      emitter.emit('evaded', { value: my_value.current });
       time.current = 0;
       downTimer.current = setTimeout(() => {
         setStateTimer(moleStates.alive);
@@ -152,7 +152,7 @@ export default function MoleStandard({ xInit, yInit, emitter, id, haste }) {
         clearTimeout(aliveTimer.current);
         clearTimeout(downTimer.current);
         deadTimer.current = setTimeout(() => {
-          // console.log(my_id.current, " died");
+          //console.log(my_id.current, ' died');
           emitter.emit('dead', { id: my_id.current, value: my_value.current });
         }, 505 / haste);
       }}></Sprite>
