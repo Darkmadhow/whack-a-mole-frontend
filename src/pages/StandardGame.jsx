@@ -37,6 +37,10 @@ export default function StandardGame() {
   const [level, setLevel] = useState(1);
   //difficulty speed multiplier
   const haste = useRef(1);
+  //swing timer values
+  const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
+  const swingTimerDuration = 800; //the swing timer cooldown in ms
+
   //the upgrades chosen by the user stored as string array and available upgrades
   const [chosenUpgrades, setChosenUpgrades] = useState([]);
   const [availableHammerUpgrades, setAvailableHammerUpgrades] = useState([
@@ -117,6 +121,9 @@ export default function StandardGame() {
         case 5:
         case 6:
           newMole = "bunny";
+          break;
+        case 7:
+          newMole = "shroom";
           break;
         default:
           newMole = "standard";
@@ -336,6 +343,9 @@ export default function StandardGame() {
               // key={moles[0].key}
               haste={haste.current}
               activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
           </Container>
@@ -354,6 +364,9 @@ export default function StandardGame() {
               // key={moles[1].key}
               haste={haste.current}
               activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
           </Container>
@@ -372,6 +385,9 @@ export default function StandardGame() {
               // key={moles[2].key}
               haste={haste.current}
               activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
           </Container>
@@ -390,6 +406,9 @@ export default function StandardGame() {
               // key={moles[3].key}
               haste={haste.current}
               activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
           </Container>
@@ -408,6 +427,9 @@ export default function StandardGame() {
               // key={moles[4].key]}
               haste={haste.current}
               activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
           </Container>

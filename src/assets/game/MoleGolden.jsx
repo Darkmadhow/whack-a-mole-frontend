@@ -10,6 +10,9 @@ export default function MoleGolden({
   id,
   haste,
   activeUpgrades,
+  swingTimerDuration,
+  cooldownActive,
+  setCooldownActive,
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
@@ -139,6 +142,9 @@ export default function MoleGolden({
   }
 
   function killMole() {
+    // Check if the cooldown is active
+    if (cooldownActive) return;
+
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
     setStateTimer(moleStates.dead);
@@ -152,6 +158,18 @@ export default function MoleGolden({
         value: spikedHammer ? my_value.current * 1.5 : my_value.current,
       });
     }, 505 / haste);
+
+    //if the player chose the rocket hammer, trigger only half the cooldown
+    const rocket_mult = activeUpgrades.some(
+      (upgrade) => upgrade.name === "rocket_hammer"
+    )
+      ? 0.5
+      : 1;
+    // Activate the swing timer cooldown
+    setCooldownActive(true);
+    setTimeout(() => {
+      setCooldownActive(false);
+    }, swingTimerDuration * rocket_mult);
   }
 
   return (

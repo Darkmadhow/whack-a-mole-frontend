@@ -4,6 +4,7 @@ import MoleGolden from "./MoleGolden";
 import MoleHardHat from "./MoleHardHat";
 import MolePeeker from "./MolePeeker";
 import MoleBunny from "./MoleBunny";
+import MoleShroom from "./MoleShroom";
 
 export default function MoleContainer({
   emitter,
@@ -15,6 +16,9 @@ export default function MoleContainer({
   setMoleCount,
   haste,
   activeUpgrades,
+  swingTimerDuration,
+  cooldownActive,
+  setCooldownActive,
 }) {
   /*
    * replaceMole: replaces the string of the recently died mole with a new one
@@ -39,6 +43,9 @@ export default function MoleContainer({
       case 5:
       case 6:
         newMole = "bunny";
+        break;
+      case 7:
+        newMole = "shroom";
         break;
       default:
         newMole = "standard";
@@ -76,6 +83,9 @@ export default function MoleContainer({
           haste={haste}
           key={moles[id].key}
           activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
         />
       );
     case "hardhat":
@@ -88,6 +98,9 @@ export default function MoleContainer({
           haste={haste}
           key={moles[id].key}
           activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
         />
       );
     case "golden":
@@ -100,6 +113,9 @@ export default function MoleContainer({
           haste={haste}
           key={moles[id].key}
           activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
         />
       );
     case "bunny":
@@ -112,6 +128,24 @@ export default function MoleContainer({
           haste={haste}
           key={moles[id].key}
           activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
+        />
+      );
+    case "shroom":
+      return (
+        <MoleShroom
+          xInit={xInit}
+          yInit={yInit + 15}
+          emitter={emitter}
+          id={id}
+          haste={haste}
+          key={moles[id].key}
+          activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
         />
       );
     default:
@@ -124,6 +158,9 @@ export default function MoleContainer({
           haste={haste}
           key={moles[id].key}
           activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
         />
       );
   }

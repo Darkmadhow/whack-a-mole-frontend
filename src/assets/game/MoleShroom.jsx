@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
-import bunny from "../img/bunny.png";
-import bunnyHit from "../img/bunny_hit.png";
+import shroom from "../img/shroom.png";
 
 export default function MoleBunny({
   xInit,
@@ -16,13 +15,13 @@ export default function MoleBunny({
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
-  const [moleImage, setMoleImage] = useState(bunny);
+  const [moleImage, setMoleImage] = useState(shroom);
   const time = useRef(0);
   const my_id = useRef(id);
   const my_value = useRef(-200); //Standard Mole point value
   const my_decay = 0; //Decay rate of point value
-  const jumpHeight = -150;
-  const [stay_alive, stay_down] = [3000 / haste, 1000 / haste]; //bunnies stay up for 3s base and down for 1s
+  const jumpHeight = -125;
+  const [stay_alive, stay_down] = [2000 / haste, 1000 / haste]; //bunnies stay up for 3s base and down for 1s
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -69,7 +68,7 @@ export default function MoleBunny({
   */
   const getRandomTimeout = () => {
     const min = 1000 / haste;
-    const max = 7000 / haste;
+    const max = 5000 / haste;
     return Math.floor(Math.random() * max - min + 1) + min;
   };
 
@@ -107,14 +106,14 @@ export default function MoleBunny({
       }, stay_alive);
     }
     if (moleState === moleStates.down) {
-      despawnBunny();
+      despawnShroom();
     }
   }, [moleState]);
 
   /*
-   * despawnBunny: if the bunny retreats in its hole unharmed, despawn
+   * despawnShroom: if the shroom retreats in its hole unharmed, despawn
    */
-  function despawnBunny() {
+  function despawnShroom() {
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
     clearTimeout(stateTimer.current);
@@ -143,20 +142,17 @@ export default function MoleBunny({
     clearTimeout(spawnTimer.current);
   }
 
-  function killBunny() {
+  function killShroom() {
     // Check if the cooldown is active
     if (cooldownActive) return;
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
     setStateTimer(moleStates.dead);
-    setMoleImage(bunnyHit);
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
-      // if the bunny is killed, use evaded message to subtract a life
       emitter.emit("dead", { id: my_id.current, value: my_value.current });
-      emitter.emit("evaded", { value: my_value.current });
     }, 505 / haste);
 
     //if the player chose the rocket hammer, trigger only half the cooldown
@@ -165,11 +161,11 @@ export default function MoleBunny({
     )
       ? 0.5
       : 1;
-    // Activate the swing timer cooldown
+    // Activate the swing timer cooldown, shrooms trigger a 3 times higher CD
     setCooldownActive(true);
     setTimeout(() => {
       setCooldownActive(false);
-    }, swingTimerDuration * rocket_mult);
+    }, swingTimerDuration * 3 * rocket_mult);
   }
 
   return (
@@ -185,7 +181,7 @@ export default function MoleBunny({
           ? "none"
           : "static"
       }
-      pointerdown={killBunny}
+      pointerdown={killShroom}
     ></Sprite>
   );
 }
