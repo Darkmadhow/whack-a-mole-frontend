@@ -20,6 +20,7 @@ export default function MoleBunny({
   const time = useRef(0);
   const my_id = useRef(id);
   const my_value = useRef(-200); //Standard Mole point value
+  const my_time_value = 10;
   const my_decay = 0; //Decay rate of point value
   const jumpHeight = -150;
   const [stay_alive, stay_down] = [3000 / haste, 1000 / haste]; //bunnies stay up for 3s base and down for 1s
@@ -120,7 +121,7 @@ export default function MoleBunny({
     clearTimeout(stateTimer.current);
     clearTimeout(deadTimer.current);
     clearTimeout(spawnTimer.current);
-    emitter.emit("dead", { id: my_id.current, value: 0 });
+    emitter.emit("dead", { id: my_id.current, value: 0, time_value: 0 });
   }
 
   /*
@@ -155,8 +156,15 @@ export default function MoleBunny({
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
       // if the bunny is killed, use evaded message to subtract a life
-      emitter.emit("dead", { id: my_id.current, value: my_value.current });
-      emitter.emit("evaded", { value: my_value.current });
+      emitter.emit("dead", {
+        id: my_id.current,
+        value: my_value.current,
+        time_value: 0,
+      });
+      emitter.emit("evaded", {
+        value: my_value.current,
+        time_value: my_time_value,
+      });
     }, 505 / haste);
 
     //if the player chose the rocket hammer, trigger only half the cooldown

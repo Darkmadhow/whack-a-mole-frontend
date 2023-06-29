@@ -20,6 +20,7 @@ export default function MoleStandard({
   const time = useRef(0);
   const my_id = useRef(id);
   const my_value = useRef(100); //Standard Mole point value
+  const my_time_value = 1;
   const my_decay = 20; //Decay rate of point value
   const jumpHeight = -125;
   const [stay_alive, stay_down] = [3000 / haste, 1000 / haste]; //Standard moles stay up for 3s base and down for 1s
@@ -112,7 +113,10 @@ export default function MoleStandard({
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", { value: my_value.current });
+      emitter.emit("evaded", {
+        value: my_value.current,
+        time_value: my_time_value * 2,
+      });
       time.current = 0;
       downTimer.current = setTimeout(() => {
         setStateTimer(moleStates.alive);
@@ -153,7 +157,11 @@ export default function MoleStandard({
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
       // console.log(my_id.current, " died");
-      emitter.emit("dead", { id: my_id.current, value: my_value.current });
+      emitter.emit("dead", {
+        id: my_id.current,
+        value: my_value.current,
+        time_value: my_time_value,
+      });
     }, 505 / haste);
 
     //if the player chose the rocket hammer, trigger only half the cooldown

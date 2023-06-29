@@ -20,6 +20,7 @@ export default function MolePeeker({
   const time = useRef(0);
   const my_id = useRef(id);
   const my_value = useRef(300); //Standard Mole point value
+  const my_time_value = 3;
   const my_decay = 100; //Decay rate of point value
   const jumpHeight = -75;
   const [stay_alive, stay_down] = [2000 / haste, 2000 / haste]; //Peeker moles stay up for 2s base and down for 2s
@@ -109,7 +110,10 @@ export default function MolePeeker({
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", { value: my_value.current });
+      emitter.emit("evaded", {
+        value: my_value.current,
+        time_value: my_time_value * 2,
+      });
       time.current = 0;
       downTimer.current = setTimeout(() => {
         setStateTimer(moleStates.alive);
@@ -149,7 +153,11 @@ export default function MolePeeker({
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
-      emitter.emit("dead", { id: my_id.current, value: my_value.current });
+      emitter.emit("dead", {
+        id: my_id.current,
+        value: my_value.current,
+        time_value: my_time_value,
+      });
     }, 505 / haste);
 
     //if the player chose the rocket hammer, trigger only half the cooldown

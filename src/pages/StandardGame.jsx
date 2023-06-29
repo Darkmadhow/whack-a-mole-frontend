@@ -127,9 +127,6 @@ export default function StandardGame() {
         case 7:
           newMole = "shroom";
           break;
-        case 7:
-          newMole = "shroom";
-          break;
         default:
           newMole = "standard";
           break;
@@ -187,13 +184,15 @@ export default function StandardGame() {
       1;
 
     //increase difficulty every 10 moles, open modal to offer an upgrade
-    if (!(molecounter % 10)) {
+    if (!(molecounter % 10)) haste.current *= 1.03;
+    if (!(molecounter % 20)) {
+      const options = getUpgradeOptions();
+      if (!options) return;
       gameObserver.current.off("evaded", subtractLife);
-      haste.current *= 1.03;
       setLevel((prev) => prev + 1);
       gameObserver.current.emit("reset_incoming");
+      setOptions(options);
       stage.stop();
-      setOptions(getUpgradeOptions());
       setTimeout(() => {
         window.my_modal_2.showModal();
       }, 1500);
@@ -215,11 +214,11 @@ export default function StandardGame() {
     const optionA = availableDeployableUpgrades[a];
     const optionB = availableDeployableUpgrades[b];
     //if no upgrades are left, return empty upgrades
-    if (!optionA && !optionB)
-      return [
-        { name: "No Upgrade left", asset: null },
-        { name: "No Upgrade left", asset: null },
-      ];
+    if (!optionA && !optionB) return false;
+    // return [
+    //   { name: "No Upgrade left", asset: null },
+    //   { name: "No Upgrade left", asset: null },
+    // ];
 
     return [optionA, optionB];
   }

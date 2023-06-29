@@ -20,6 +20,7 @@ export default function MoleGolden({
   const time = useRef(0);
   const my_id = useRef(id);
   const my_value = useRef(1000); //Standard Mole point value
+  const my_time_value = 7;
   const my_decay = 800; //Decay rate of point value
   const jumpHeight = -125;
   const [stay_alive, stay_down] = [1000 / haste, 1000 / haste]; //Golden moles stay up for 1s base and down for 1s
@@ -112,7 +113,10 @@ export default function MoleGolden({
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", { value: my_value.current });
+      emitter.emit("evaded", {
+        value: my_value.current,
+        time_value: my_time_value * 2,
+      });
       time.current = 0;
       downTimer.current = setTimeout(() => {
         setStateTimer(moleStates.alive);
@@ -156,6 +160,7 @@ export default function MoleGolden({
       emitter.emit("dead", {
         id: my_id.current,
         value: spikedHammer ? my_value.current * 1.5 : my_value.current,
+        time_value: my_time_value - 4, //only get 3 seconds for hitting golden mole, instead of 7
       });
     }, 505 / haste);
 

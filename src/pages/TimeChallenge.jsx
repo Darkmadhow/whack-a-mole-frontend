@@ -4,70 +4,103 @@ import React, {
   useEffect,
   useContext,
   useCallback,
-} from 'react';
-import { NavLink } from 'react-router-dom';
-import { Stage, Sprite, Container } from '@pixi/react';
-import { Texture, Graphics } from 'pixi.js';
-import { EventEmitter } from '@pixi/utils';
-import '../styles/game.css';
-import MoleHole from '../assets/game/MoleHole';
-import MoleContainer from '../assets/game/MoleContainer';
-import MalletStandard from '../assets/game/MalletStandard';
-import { uploadHighScore } from '../utils/scores';
-import { UserContext } from '../userContext';
-import Reticle from '../assets/game/Reticle';
-import UpgradeModal from '../components/UpgradeModal';
+} from "react";
+import { NavLink } from "react-router-dom";
+import { Stage, Sprite, Container } from "@pixi/react";
+import { Texture, Graphics } from "pixi.js";
+import { EventEmitter } from "@pixi/utils";
+import { UserContext } from "../userContext";
+import { uploadHighScore } from "../utils/scores";
+import UpgradeModal from "../components/UpgradeModal";
+import MoleHole from "../assets/game/MoleHole";
+import MoleContainer from "../assets/game/MoleContainer";
+import Mallet from "../assets/game/Mallet";
+import Reticle from "../assets/game/Reticle";
+import rocketHammer from "../assets/img/mallet_rocket.png";
+import spikeHammer from "../assets/img/mallet_spikey.png";
+import droneHammer from "../assets/img/drone.png";
+import bomb from "../assets/img/bomb.png";
+import cover from "../assets/img/cover.png";
+import trap from "../assets/img/trap.png";
+import "../styles/game.css";
 
 export default function TimeChallenge() {
+  /* ------------------------- INITIAL VALUES SETUP ------------------------- */
+  /* ------------------------- -------------------- ------------------------- */
+  //the stage component including all our sprites
   const [stage, setStage] = useState();
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
   //initial score and lives
   const [score, setScore] = useState(0);
   const [time, setTime] = useState(120);
+  const [level, setLevel] = useState(1);
   //difficulty speed multiplier
   const haste = useRef(1);
+  //swing timer values
+  const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
+  const swingTimerDuration = 800; //the swing timer cooldown in ms
 
   const gameTimer = useRef(null);
+
+  //the upgrades chosen by the user stored as string array and available upgrades
+  const [chosenUpgrades, setChosenUpgrades] = useState([]);
+  const [availableHammerUpgrades, setAvailableHammerUpgrades] = useState([
+    { name: "rocket_hammer", asset: rocketHammer },
+    { name: "spike_hammer", asset: spikeHammer },
+  ]);
+  const [[option1, option2], setOptions] = useState([
+    { name: null, asset: null },
+    { name: null, asset: null },
+  ]);
+  const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
+    useState([
+      { name: "bomb", asset: bomb },
+      { name: "cover", asset: cover },
+      { name: "trap", asset: trap },
+      { name: "drone", asset: droneHammer },
+    ]);
+  //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
+  const [rightClickDeploy, setRightClickDeploy] = useState(null);
 
   //subscribe to mole events
   const { token } = useContext(UserContext);
   useEffect(() => {
-    gameObserver.current.on('dead', updateScore);
-    gameObserver.current.on('evaded', substractTime);
-    gameObserver.current.on('reset', replaceAllMoles);
+    gameObserver.current.on("dead", updateScore);
+    gameObserver.current.on("evaded", subtractTime);
+    gameObserver.current.on("reset", replaceAllMoles);
 
     gameTimer.current = setInterval(() => {
       setTime((prev) => prev - 1);
     }, 1000);
 
-    console.log('mount: start gameTimer:', gameTimer.current);
+    // console.log("mount: start gameTimer:", gameTimer.current);
     return () => {
-      gameObserver.current.off('dying', updateScore);
-      gameObserver.current.off('evaded', substractTime);
-      gameObserver.current.off('reset', replaceAllMoles);
+      gameObserver.current.off("dead", updateScore);
+      gameObserver.current.off("evaded", subtractTime);
+      gameObserver.current.off("reset", replaceAllMoles);
 
       clearInterval(gameTimer.current);
-      console.log('unmount: clear gameTimer', gameTimer.current);
+      // console.log("unmount: clear gameTimer", gameTimer.current);
     };
   }, []);
 
+  /* ------------------------------ SCORING FUNCTIONS ------------------------------ */
+  /* ------------------------------ ----------------- ------------------------------ */
   function updateScore(e) {
     const score = e.value < 0 ? 0 : e.value;
     const timeToAdd = Math.floor(e.value / 100);
-    console.log('updateScore:', e, 'Time added:', timeToAdd);
+    // console.log("updateScore:", e, "Time added:", timeToAdd);
     setScore((prev) => prev + score);
     setTime((prev) => prev + timeToAdd);
   }
 
-  const substractTime = useCallback((e) => {
-    if (e) {
-      const timeToSubstract = ((100 - e.value) / 10) * 4;
-      console.log('substractTime:', timeToSubstract);
-      setTime((prev) => prev - timeToSubstract);
-    }
+  const subtractTime = useCallback((e) => {
+    setTime((prev) => prev - e.time_value);
   }, []);
 
+  /* ------------------------------ MOLE HANDLING ------------------------------ */
+  /* ------------------------------ ------------- ------------------------------ */
   //counter for the moles in each hole, as iterable object
   const [mole_count, setMoleCount] = useState({
     0: 0,
@@ -79,35 +112,38 @@ export default function TimeChallenge() {
 
   //current mole type in each hole, as a string array
   const [moles, setMoles] = useState([
-    { moleType: 'standard', key: 1000 },
-    { moleType: 'standard', key: 2000 },
-    { moleType: 'standard', key: 3000 },
-    { moleType: 'standard', key: 4000 },
-    { moleType: 'standard', key: 5000 },
+    { moleType: "standard", key: 1000 },
+    { moleType: "standard", key: 2000 },
+    { moleType: "standard", key: 3000 },
+    { moleType: "standard", key: 4000 },
+    { moleType: "standard", key: 5000 },
   ]);
 
   function replaceAllMoles() {
     const molesTemp = moles.map((mole) => {
       const rnd = Math.floor(Math.random() * 13);
-      let newMole = 'standard';
+      let newMole = "standard";
       switch (rnd) {
         case 0:
         case 1:
-          newMole = 'peeker';
+          newMole = "peeker";
           break;
         case 2:
         case 3:
-          newMole = 'hardhat';
+          newMole = "hardhat";
           break;
         case 4:
-          newMole = 'golden';
+          newMole = "golden";
           break;
         case 5:
         case 6:
-          newMole = 'bunny';
+          newMole = "bunny";
+          break;
+        case 7:
+          newMole = "shroom";
           break;
         default:
-          newMole = 'standard';
+          newMole = "standard";
           break;
       }
 
@@ -120,7 +156,8 @@ export default function TimeChallenge() {
     setMoles(molesTemp);
   }
 
-  //--------------- Stage Settings ---------------
+  /* ----------------------------------- STAGE SETTINGS ----------------------------------- */
+  /* ----------------------------------- -------------- ----------------------------------- */
   const stageProps = {
     height: 900,
     width: 1400,
@@ -142,7 +179,100 @@ export default function TimeChallenge() {
     3: drawCircleMask(hole_coords[3].x, hole_coords[3].y),
     4: drawCircleMask(hole_coords[4].x, hole_coords[4].y),
   });
-  //--------------- Stage Settings End ---------------
+
+  /* ------------------------------ UPGRADE FUNCTIONALITY ------------------------------ */
+  /* ------------------------------ --------------------- ------------------------------ */
+
+  /*
+   * increases difficulty over time
+   */
+  useEffect(() => {
+    //count moles hit
+    const molecounter =
+      mole_count[0] +
+      mole_count[1] +
+      mole_count[2] +
+      mole_count[3] +
+      mole_count[4] +
+      1;
+
+    //increase difficulty every 10 moles, open modal to offer an upgrade
+    if (!(molecounter % 10)) haste.current *= 1.03;
+    if (!(molecounter % 20)) {
+      const options = getUpgradeOptions();
+      if (!options) return;
+      gameObserver.current.off("evaded", subtractTime);
+      setLevel((prev) => prev + 1);
+      gameObserver.current.emit("reset_incoming");
+      setOptions(options);
+      stage.stop();
+      setTimeout(() => {
+        window.my_modal_2.showModal();
+      }, 1500);
+    }
+  }, [mole_count]);
+
+  function getUpgradeOptions() {
+    //no hammer upgade chosen? offer hammers first
+    if (availableHammerUpgrades.length > 1) {
+      const [a, b] = getRandomIndices(availableHammerUpgrades);
+      const optionA = availableHammerUpgrades[a];
+      const optionB = availableHammerUpgrades[b];
+      //allow only one hammer upgrade: empty array upon offering the choice
+      setAvailableHammerUpgrades([]);
+      return [optionA, optionB];
+    }
+    //if less than 2 hammer upgrades are left, offer deployable object instead
+    const [a, b] = getRandomIndices(availableDeployableUpgrades);
+    const optionA = availableDeployableUpgrades[a];
+    const optionB = availableDeployableUpgrades[b];
+    //if no upgrades are left, return empty upgrades
+    if (!optionA && !optionB) return false;
+
+    return [optionA, optionB];
+  }
+
+  /*
+   * cycleRightClickDeploy: sets the current deployable object to the next one in the chosenUpgrades Array, excluding hammer upgrades
+   */
+  function cycleRightClickDeploy() {
+    console.log("cycling");
+    const upgrades = chosenUpgrades.filter(
+      (upgrade) =>
+        upgrade.name !== "spike_hammer" && upgrade.name !== "rocket_hammer"
+    );
+    const currentIndex = upgrades.findIndex(
+      (upgrade) => upgrade.name === rightClickDeploy.name
+    );
+
+    if (currentIndex !== -1) {
+      const nextIndex = (currentIndex + 1) % upgrades.length;
+      const nextUpgrade = upgrades[nextIndex];
+      setRightClickDeploy(nextUpgrade);
+      console.log("Switched to: ", nextUpgrade);
+    }
+  }
+
+  /*
+   * handleUpgradeSelection: The callback being executed by the upgrade choice modal
+   * params: userChoice, the Upgrade Object the user has clicked
+   * return: returns an array of 2 upgrade Objects
+   */
+  function handleUpgradeSelection(userChoice) {
+    //if no upgrades are left, we get an empty asset, don't to anything
+    if (userChoice.asset == null) return;
+
+    setChosenUpgrades((prev) => [...prev, userChoice]);
+    if (availableDeployableUpgrades.includes(userChoice)) {
+      const index = availableDeployableUpgrades.indexOf(userChoice);
+      setAvailableDeployableUpgrades(
+        availableDeployableUpgrades.toSpliced(index, 1)
+      );
+    }
+  }
+
+  /* ------------------------------ HELPER FUNCTIONS ------------------------------ */
+  /* ------------------------------ ---------------- ------------------------------ */
 
   /*
    * drawCircleMask: draws a circular Graphics object with red fill
@@ -159,35 +289,49 @@ export default function TimeChallenge() {
     return newCircle;
   }
 
-  /*
-   * increases difficulty over time
-   */
-  useEffect(() => {
-    //count moles hit
-    const molecounter =
-      mole_count[0] +
-      mole_count[1] +
-      mole_count[2] +
-      mole_count[3] +
-      mole_count[4] +
-      1;
+  // Function to generate a random number within a range
+  function getRandomIndex(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
 
-    //increase difficulty every 10 moles
-    if (!(molecounter % 10)) {
-      gameObserver.current.off('evaded', substractTime);
-      haste.current *= 1.03;
-      gameObserver.current.emit('reset_incoming');
-      stage.stop();
-      window.my_modal_2.showModal();
+  /*
+   * getRandomIndices: select 2 random indices from an array which are guaranteed to be different
+   * params: array, the array to pick two indices from
+   * returns: [index1, index2], an array with the 2 selected indices which are distinct
+   */
+  const getRandomIndices = (array) => {
+    const length = array.length;
+
+    if (length == 0) {
+      // If the array has no entries, return false in a safe way
+      return [false, false];
     }
-  }, [mole_count]);
+    if (length < 2) {
+      // If the array has less than 2 entries, return the only available index twice
+      return [0, 0];
+    }
+
+    // Generate the first random index
+    let index1 = getRandomIndex(0, length - 1);
+
+    // Generate the second random index, ensuring it is distinct from the first index
+    let index2;
+    do {
+      index2 = getRandomIndex(0, length - 1);
+    } while (index2 === index1);
+
+    return [index1, index2];
+  };
+
+  /* ------------------------------ VISUAL OUTPUT ------------------------------ */
+  /* ------------------------------ ------------- ------------------------------ */
 
   //game over at 0 lives
   if (time <= 0) {
-    uploadHighScore(token, { score: score, gamemode: 'time' });
-    console.log('uploadHighScore:', token, score);
+    uploadHighScore(token, { score: score, gamemode: "time" });
+    console.log("uploadHighScore:", token, score);
     clearInterval(gameTimer.current);
-    console.log('game over: clear gameTimer', gameTimer.current);
+    console.log("game over: clear gameTimer", gameTimer.current);
 
     return (
       <div className="game">
@@ -198,6 +342,12 @@ export default function TimeChallenge() {
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
+          <Stage
+            width={1}
+            height={1}
+            options={{ backgroundAlpha: 0 }}
+            onMount={setStage}
+          />
         </div>
       </div>
     );
@@ -209,11 +359,12 @@ export default function TimeChallenge() {
         <NavLink to="/modeselection">Back</NavLink>
         <div className="score-display">Score: {score}</div>
         <div className="lives">Time: {time}</div>
+        <div className="level">Stage: {level}</div>
       </div>
       <Stage {...stageProps} onMount={setStage}>
         <Container sortableChildren={true}>
           <Sprite texture={Texture.WHITE} width={1} height={1} />
-          <MalletStandard />
+          <Mallet chosenUpgrades={chosenUpgrades} />
           <Reticle />
           {/* Hole Nr. 0 */}
           <Container sortableChildren={true} mask={hole_masks.current[0]}>
@@ -229,6 +380,10 @@ export default function TimeChallenge() {
               setMoleCount={setMoleCount}
               // key={moles[0].key}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
           </Container>
@@ -246,6 +401,10 @@ export default function TimeChallenge() {
               setMoleCount={setMoleCount}
               // key={moles[1].key}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
           </Container>
@@ -263,6 +422,10 @@ export default function TimeChallenge() {
               setMoleCount={setMoleCount}
               // key={moles[2].key}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
           </Container>
@@ -280,6 +443,10 @@ export default function TimeChallenge() {
               setMoleCount={setMoleCount}
               // key={moles[3].key}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
           </Container>
@@ -297,6 +464,10 @@ export default function TimeChallenge() {
               setMoleCount={setMoleCount}
               // key={moles[4].key]}
               haste={haste.current}
+              activeUpgrades={chosenUpgrades}
+              swingTimerDuration={swingTimerDuration}
+              cooldownActive={cooldownActive}
+              setCooldownActive={setCooldownActive}
             />
             <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
           </Container>
@@ -305,7 +476,10 @@ export default function TimeChallenge() {
       <UpgradeModal
         stage={stage}
         gameObserver={gameObserver}
-        subtractLife={substractTime}
+        subtractLife={subtractTime}
+        option1={option1}
+        option2={option2}
+        handleUpgradeSelection={handleUpgradeSelection}
       />
     </div>
   );
