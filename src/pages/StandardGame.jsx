@@ -43,6 +43,7 @@ export default function StandardGame() {
   const SWING_TIMER_DURATION = 800; //the swing timer cooldown in ms
   const DEPLOY_CD = 5000; //the time players have to wait between deployables
   const MAX_TOLERANCE = 150; //the distance in pixels within the player has to rightclick to place something on a hole
+  const BOMB_TIMER = 4000; //time before bomb explodes
 
   //isGameOver
   const [isGameOver, setIsGameOver] = useState(false);
@@ -279,6 +280,14 @@ export default function StandardGame() {
     switch (rightClickDeploy.name) {
       case "bomb":
         deploy.zIndex = 1;
+        deploy.addEventListener("boom", function (e) {
+          setPluggedHoles({ ...pluggedHoles, [e.source]: null });
+          this.destroy();
+        });
+        setTimeout(() => {
+          gameObserver.current.emit("boom", { source: id });
+          console.log("BOOM");
+        }, BOMB_TIMER);
         break;
       case "cover":
         deploy.zIndex = 3;
