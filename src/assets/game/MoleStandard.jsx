@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useApp, useTick } from "@pixi/react";
+import { Sprite, useTick } from "@pixi/react";
 import moleStandard from "../img/mole.png";
 import moleStandardHit from "../img/mole_hit.png";
 
@@ -16,14 +16,14 @@ export default function MoleStandard({
   plugged,
   unplugger,
 }) {
-  const gameApp = useApp();
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
   const [moleImage, setMoleImage] = useState(moleStandard);
   const time = useRef(0);
   const my_id = useRef(id);
   const my_value = useRef(100); //Standard Mole point value
-  const my_time_value = 1;
+  const my_time_value = 4;
+  const my_craze_value = useRef(80);
   const my_decay = 20; //Decay rate of point value
   const jumpHeight = -125;
   const [stay_alive, stay_down] = [3000 / haste, 1000 / haste]; //Standard moles stay up for 3s base and down for 1s
@@ -129,7 +129,8 @@ export default function MoleStandard({
     if (moleState === moleStates.down) {
       emitter.emit("evaded", {
         value: my_value.current,
-        time_value: my_time_value * 2,
+        time_value: my_time_value,
+        craze_value: my_craze_value.current,
       });
       time.current = 0;
       downTimer.current = setTimeout(() => {

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useTick } from "@pixi/react";
-import moleHardHat from "../img/mole_hardhat.png";
-import moleStandard from "../img/mole.png";
-import moleStandardHit from "../img/mole_hit.png";
+import React, { useEffect, useRef, useState } from 'react';
+import { Sprite, useTick } from '@pixi/react';
+import moleHardHat from '../img/mole_hardhat.png';
+import moleStandard from '../img/mole.png';
+import moleStandardHit from '../img/mole_hit.png';
 
 export default function MoleHardHat({
   xInit,
@@ -23,13 +23,14 @@ export default function MoleHardHat({
   const time = useRef(0);
   const my_id = useRef(id);
   const my_value = useRef(500); //Standard Mole point value
-  const my_time_value = 2;
+  const my_time_value = 6;
+  const my_craze_value = useRef(130);
   const my_decay = 250; //Decay rate of point value
   const jumpHeight = -145;
   const [stay_alive, stay_down] = [4000 / haste, 1000 / haste]; //Hardhat moles stay up for 4s base and down for 1s
   const [life, setLife] = useState(1);
   const spikedHammer = activeUpgrades.some(
-    (upgrade) => upgrade.name === "spike_hammer"
+    (upgrade) => upgrade.name === 'spike_hammer'
   ); //hardhat mole needs to know wether spiked Hammer is active or not
   const TRAP_TIMER = 3000; //the amount of time a mole will be stuck in a trap
 
@@ -40,11 +41,11 @@ export default function MoleHardHat({
   const deadTimer = useRef(null);
 
   const moleStates = {
-    dead: "dead",
-    alive: "alive",
-    spawning: "spawning",
-    dying: "dying",
-    down: "down",
+    dead: 'dead',
+    alive: 'alive',
+    spawning: 'spawning',
+    dying: 'dying',
+    down: 'down',
   };
 
   const [moleState, setMoleState] = useState(moleStates.dead);
@@ -85,14 +86,14 @@ export default function MoleHardHat({
     Upon Entering Stage, set a random timer upon which the mole wakes up and subscribe to game events
   */
   useEffect(() => {
-    emitter.on("reset_incoming", stopAllTimeouts);
+    emitter.on('reset_incoming', stopAllTimeouts);
 
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
     }, getRandomTimeout());
     return () => {
-      emitter.off("reset_incoming", stopAllTimeouts);
+      emitter.off('reset_incoming', stopAllTimeouts);
 
       clearTimeout(aliveTimer.current);
       clearTimeout(downTimer.current);
@@ -127,9 +128,10 @@ export default function MoleHardHat({
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", {
+      emitter.emit('evaded', {
         value: my_value.current,
-        time_value: my_time_value * 2,
+        time_value: my_time_value,
+        craze_value: my_craze_value.current,
       });
       time.current = 0;
       downTimer.current = setTimeout(() => {
@@ -168,12 +170,12 @@ export default function MoleHardHat({
     setMoleImage(moleStandardHit);
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
-    emitter.emit("dying", {
+    emitter.emit('dying', {
       id: my_id.current,
       value: my_value.current,
     });
     deadTimer.current = setTimeout(() => {
-      emitter.emit("dead", {
+      emitter.emit('dead', {
         id: my_id.current,
         value: my_value.current,
         time_value: my_time_value,
@@ -185,7 +187,7 @@ export default function MoleHardHat({
 
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
-      (upgrade) => upgrade.name === "rocket_hammer"
+      (upgrade) => upgrade.name === 'rocket_hammer'
     )
       ? 0.5
       : 1;
@@ -199,7 +201,7 @@ export default function MoleHardHat({
   function subtractMoleLife() {
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
-      (upgrade) => upgrade.name === "rocket_hammer"
+      (upgrade) => upgrade.name === 'rocket_hammer'
     )
       ? 0.5
       : 1;
@@ -230,8 +232,8 @@ export default function MoleHardHat({
       zIndex={1}
       eventMode={
         moleState === moleStates.dying || moleState === moleStates.dead
-          ? "none"
-          : "static"
+          ? 'none'
+          : 'static'
       }
       pointerdown={() => {
         if (life > 0) {
@@ -246,7 +248,6 @@ export default function MoleHardHat({
           //mole has already been hit
           killMole();
         }
-      }}
-    ></Sprite>
+      }}></Sprite>
   );
 }

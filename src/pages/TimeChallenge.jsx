@@ -91,10 +91,8 @@ export default function TimeChallenge() {
   /* ------------------------------ ----------------- ------------------------------ */
   function updateScore(e) {
     const score = e.value < 0 ? 0 : e.value;
-    const timeToAdd = Math.floor(e.value / 100);
-    // console.log("updateScore:", e, "Time added:", timeToAdd);
     setScore((prev) => prev + score);
-    setTime((prev) => prev + timeToAdd);
+    setTime((prev) => prev + e.time_value);
   }
 
   const subtractTime = useCallback((e) => {

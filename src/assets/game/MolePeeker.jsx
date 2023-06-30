@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useTick } from "@pixi/react";
-import molePeeker from "../img/mole_peeker.png";
-import molePeekerHit from "../img/mole_peeker_hit.png";
+import React, { useEffect, useRef, useState } from 'react';
+import { Sprite, useTick } from '@pixi/react';
+import molePeeker from '../img/mole_peeker.png';
+import molePeekerHit from '../img/mole_peeker_hit.png';
 
 export default function MolePeeker({
   xInit,
@@ -22,7 +22,8 @@ export default function MolePeeker({
   const time = useRef(0);
   const my_id = useRef(id);
   const my_value = useRef(300); //Standard Mole point value
-  const my_time_value = 3;
+  const my_time_value = 8;
+  const my_craze_value = useRef(150);
   const my_decay = 100; //Decay rate of point value
   const jumpHeight = -75;
   const [stay_alive, stay_down] = [2000 / haste, 2000 / haste]; //Peeker moles stay up for 2s base and down for 2s
@@ -35,11 +36,11 @@ export default function MolePeeker({
   const deadTimer = useRef(null);
 
   const moleStates = {
-    dead: "dead",
-    alive: "alive",
-    spawning: "spawning",
-    dying: "dying",
-    down: "down",
+    dead: 'dead',
+    alive: 'alive',
+    spawning: 'spawning',
+    dying: 'dying',
+    down: 'down',
   };
 
   const [moleState, setMoleState] = useState(moleStates.dead);
@@ -81,14 +82,14 @@ export default function MolePeeker({
     Upon Entering Stage, set a random timer upon which the mole wakes up and subscribe to game events
   */
   useEffect(() => {
-    emitter.on("reset_incoming", stopAllTimeouts);
+    emitter.on('reset_incoming', stopAllTimeouts);
 
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
     }, getRandomTimeout());
     return () => {
-      emitter.off("reset_incoming", stopAllTimeouts);
+      emitter.off('reset_incoming', stopAllTimeouts);
 
       clearTimeout(aliveTimer.current);
       clearTimeout(downTimer.current);
@@ -123,9 +124,10 @@ export default function MolePeeker({
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", {
+      emitter.emit('evaded', {
         value: my_value.current,
-        time_value: my_time_value * 2,
+        time_value: my_time_value,
+        craze_value: my_craze_value.current,
       });
       time.current = 0;
       downTimer.current = setTimeout(() => {
@@ -166,7 +168,7 @@ export default function MolePeeker({
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
-      emitter.emit("dead", {
+      emitter.emit('dead', {
         id: my_id.current,
         value: my_value.current,
         time_value: my_time_value,
@@ -178,7 +180,7 @@ export default function MolePeeker({
 
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
-      (upgrade) => upgrade.name === "rocket_hammer"
+      (upgrade) => upgrade.name === 'rocket_hammer'
     )
       ? 0.5
       : 1;
@@ -206,10 +208,9 @@ export default function MolePeeker({
       zIndex={1}
       eventMode={
         moleState === moleStates.dying || moleState === moleStates.dead
-          ? "none"
-          : "static"
+          ? 'none'
+          : 'static'
       }
-      pointerdown={killMole}
-    ></Sprite>
+      pointerdown={killMole}></Sprite>
   );
 }
