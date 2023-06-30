@@ -39,7 +39,7 @@ export default function SixtySecondsCraze() {
   const haste = useRef(1.5);
   //swing timer values
   const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
-  const swingTimerDuration = 800; //the swing timer cooldown in ms
+  const swingTimerDuration = 300; //the swing timer cooldown in ms
 
   const gameTimer = useRef(null);
   //isGameOver
@@ -69,7 +69,7 @@ export default function SixtySecondsCraze() {
   const { token } = useContext(UserContext);
   useEffect(() => {
     gameObserver.current.on('dead', updateScore);
-    gameObserver.current.on('evaded', subtractTime);
+    gameObserver.current.on('evaded', subtractScore);
     gameObserver.current.on('reset', replaceAllMoles);
 
     gameTimer.current = setInterval(() => {
@@ -79,7 +79,7 @@ export default function SixtySecondsCraze() {
     // console.log("mount: start gameTimer:", gameTimer.current);
     return () => {
       gameObserver.current.off('dead', updateScore);
-      gameObserver.current.off('evaded', subtractTime);
+      gameObserver.current.off('evaded', subtractScore);
       gameObserver.current.off('reset', replaceAllMoles);
 
       clearInterval(gameTimer.current);
@@ -91,14 +91,12 @@ export default function SixtySecondsCraze() {
   /* ------------------------------ ----------------- ------------------------------ */
   function updateScore(e) {
     const score = e.value < 0 ? 0 : e.value;
-    const timeToAdd = Math.floor(e.value / 100);
     // console.log("updateScore:", e, "Time added:", timeToAdd);
     setScore((prev) => prev + score);
-    setTime((prev) => prev + timeToAdd);
   }
 
-  const subtractTime = useCallback((e) => {
-    setTime((prev) => prev - e.time_value);
+  const subtractScore = useCallback((e) => {
+    setScore((prev) => prev - e.craze_value);
   }, []);
 
   useEffect(() => {
@@ -212,11 +210,11 @@ export default function SixtySecondsCraze() {
       1;
 
     //increase difficulty every 10 moles, open modal to offer an upgrade
-    if (!(molecounter % 10)) haste.current *= 1.03;
+    if (!(molecounter % 10)) haste.current *= 1.04;
     if (!(molecounter % 20)) {
       const options = getUpgradeOptions();
       if (!options) return;
-      gameObserver.current.off('evaded', subtractTime);
+      // gameObserver.current.off('evaded', subtractTime);
       setLevel((prev) => prev + 1);
       gameObserver.current.emit('reset_incoming');
       setOptions(options);
@@ -486,7 +484,7 @@ export default function SixtySecondsCraze() {
       <UpgradeModal
         stage={stage}
         gameObserver={gameObserver}
-        subtractLife={subtractTime}
+        subtractLife={subtractScore}
         option1={option1}
         option2={option2}
         handleUpgradeSelection={handleUpgradeSelection}
