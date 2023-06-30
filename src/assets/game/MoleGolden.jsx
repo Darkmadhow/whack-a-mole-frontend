@@ -110,7 +110,7 @@ export default function MoleGolden({
       //if there's a trap on the hole, stay up for longer
       if (plugged[id] && plugged[id].name === "trap") {
         aliveTimer.current = setTimeout(() => {
-          setTimeout(removePlug, TRAP_TIMER);
+          removePlug();
           //when alive timer's up, go to hiding state and reduce point value
           setStateTimer(moleStates.down);
           setMoleState(moleStates.dying);
@@ -177,6 +177,9 @@ export default function MoleGolden({
       });
     }, 505 / haste);
 
+    //clear deployed upgrades
+    removePlug();
+
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
       (upgrade) => upgrade.name === "rocket_hammer"
@@ -192,8 +195,8 @@ export default function MoleGolden({
 
   //removes the deployed upgrade from the hole
   function removePlug() {
-    plugged[id].dependantChild?.destroy();
-    plugged[id].destroy();
+    plugged[id]?.dependantChild?.destroy();
+    plugged[id]?.destroy();
     unplugger({ ...plugged, [id]: null });
   }
 
