@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { NavLink } from "react-router-dom";
 import { Stage, Sprite, Container } from "@pixi/react";
-import { Texture, Graphics } from "pixi.js";
+import { Texture, Graphics, Sprite as PIXISprite, Point } from "pixi.js";
 import { EventEmitter } from "@pixi/utils";
 import { UserContext } from "../userContext";
 import { uploadHighScore } from "../utils/scores";
@@ -22,13 +22,14 @@ import droneHammer from "../assets/img/drone.png";
 import bomb from "../assets/img/bomb.png";
 import cover from "../assets/img/cover.png";
 import trap from "../assets/img/trap.png";
+import trap_foreground from "../assets/img/trap_foreground.png";
 import "../styles/game.css";
 
 export default function StandardGame() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
   /* ------------------------- -------------------- ------------------------- */
-  //the stage component including all our sprites
-  const [stage, setStage] = useState();
+  //the app component including all our sprites
+  const [app, setApp] = useState();
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
   //initial score, lives and difficulty level
@@ -39,7 +40,9 @@ export default function StandardGame() {
   const haste = useRef(1);
   //swing timer values
   const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
-  const swingTimerDuration = 800; //the swing timer cooldown in ms
+  const SWING_TIMER_DURATION = 800; //the swing timer cooldown in ms
+  const DEPLOY_CD = 5000; //the time players have to wait between deployables
+  const MAX_TOLERANCE = 150; //the distance in pixels within the player has to rightclick to place something on a hole
 
   //isGameOver
   const [isGameOver, setIsGameOver] = useState(false);
@@ -63,6 +66,14 @@ export default function StandardGame() {
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
   const [rightClickDeploy, setRightClickDeploy] = useState(null);
+  const [pluggedHoles, setPluggedHoles] = useState({
+    0: null,
+    1: null,
+    2: null,
+    3: null,
+    4: null,
+  });
+  const [deployableCooldown, setDeployableCooldown] = useState(false);
 
   //subscribe to mole events
   const { token } = useContext(UserContext);
@@ -93,7 +104,7 @@ export default function StandardGame() {
   }, [lives]);
 
   useEffect(() => {
-    if (lives <= 0) setIsGameOver(true);
+    // if (lives <= 0) setIsGameOver(true);
   }, [lives]);
 
   useEffect(() => {
@@ -211,7 +222,7 @@ export default function StandardGame() {
       setLevel((prev) => prev + 1);
       gameObserver.current.emit("reset_incoming");
       setOptions(options);
-      stage.stop();
+      app.stop();
       setTimeout(() => {
         window.my_modal_2.showModal();
       }, 1500);
@@ -251,13 +262,60 @@ export default function StandardGame() {
   /*
    * handleRightclick: places the currently selected deployable upgrade on the nearest mole hole
    */
-  function handleRightclick(e) {
-    e.preventDefault();
-    if (!rightClickDeploy) return;
-    console.log("Putting down: ", rightClickDeploy);
-    const deploy = PIXI.Sprite.from(rightClickDeploy.asset);
+  function handleRightclick(x, y, id) {
+    //if no deployable upgrade has been chosen so far or the cooldown is running, or one is already there, stop here
+    if (!rightClickDeploy || deployableCooldown || pluggedHoles[id]) return;
+
+    //select the right hole to put the deployable on
+    const container = app.stage.children[0].children[id];
+
+    const deploy = PIXISprite.from(rightClickDeploy.asset);
+    deploy.anchor.set(0.5);
+    deploy.x = x;
+    deploy.y = y;
+    deploy.name = rightClickDeploy.name;
+
+    //find out on which layer the deployable needs to be rendered
+    switch (rightClickDeploy.name) {
+      case "bomb":
+        deploy.zIndex = 1;
+        break;
+      case "cover":
+        deploy.zIndex = 3;
+        break;
+      case "trap":
+        deploy.zIndex = 0;
+        deploy.y -= 10;
+        //add foreground
+        const foreground = createTrapChild(x, y);
+        container.addChild(foreground);
+        deploy.dependantChild = foreground;
+        break;
+      //the drone gets a bit more complicated...
+      case "drone":
+        deploy.zIndex = 3;
+        deployDrone(deploy);
+        return;
+    }
+
+    //plug the deployable into the hole and trigger the cooldown
+    triggerDeployCooldown();
+    setPluggedHoles({ ...pluggedHoles, [id]: deploy });
+    container.addChild(deploy);
   }
 
+  function deployDrone(drone) {
+    triggerDeployCooldown();
+  }
+
+  function createTrapChild(x, y) {
+    const trap_fore = PIXISprite.from(trap_foreground);
+    trap_fore.anchor.set(0.5);
+    trap_fore.x = x;
+    trap_fore.y = y - 10;
+    trap_fore.zIndex = 3;
+    return trap_fore;
+  }
   /*
    * cycleRightClickDeploy: sets the current deployable object to the next one in the chosenUpgrades Array, excluding hammer upgrades
    */
@@ -302,6 +360,11 @@ export default function StandardGame() {
       );
     }
   }
+
+  //if a new upgrade is chosen, cycle to it
+  useEffect(() => {
+    cycleRightClickDeploy(1);
+  }, [chosenUpgrades]);
 
   /* ------------------------------ HELPER FUNCTIONS ------------------------------ */
   /* ------------------------------ ---------------- ------------------------------ */
@@ -359,6 +422,14 @@ export default function StandardGame() {
     e.preventDefault();
   }
 
+  //triggers the cooldown on the deployable upgrades
+  function triggerDeployCooldown() {
+    setDeployableCooldown(true);
+    setTimeout(() => {
+      setDeployableCooldown(false);
+    }, DEPLOY_CD);
+  }
+
   /* ------------------------------ VISUAL OUTPUT ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
   //game over at 0 lives
@@ -376,7 +447,7 @@ export default function StandardGame() {
             width={1}
             height={1}
             options={{ backgroundAlpha: 0 }}
-            onMount={setStage}
+            onMount={setApp}
           />
         </div>
       </div>
@@ -391,10 +462,10 @@ export default function StandardGame() {
         <div className="lives">Lives: {lives}</div>
         <div className="level">Stage: {level}</div>
       </div>
-      <div className="game-container" onAuxClick={handleRightclick}>
-        <Stage {...stageProps} onMount={setStage}>
+      <div className="game-container">
+        <Stage {...stageProps} onMount={setApp}>
           <Container sortableChildren={true}>
-            <Sprite texture={Texture.WHITE} width={1} height={1} />
+            <Sprite texture={Texture.WHITE} width={1} height={1} zIndex={99} />
             <Mallet chosenUpgrades={chosenUpgrades} />
             <Reticle />
             {/* Hole Nr. 0 */}
@@ -412,11 +483,18 @@ export default function StandardGame() {
                 // key={moles[0].key}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
-                swingTimerDuration={swingTimerDuration}
+                swingTimerDuration={SWING_TIMER_DURATION}
                 cooldownActive={cooldownActive}
                 setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
               />
-              <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
+              <MoleHole
+                xInit={hole_coords[0].x}
+                yInit={hole_coords[0].y}
+                id={0}
+                handler={handleRightclick}
+              />
             </Container>
             {/* Hole Nr. 1 */}
             <Container sortableChildren={true} mask={hole_masks.current[1]}>
@@ -433,11 +511,18 @@ export default function StandardGame() {
                 // key={moles[1].key}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
-                swingTimerDuration={swingTimerDuration}
+                swingTimerDuration={SWING_TIMER_DURATION}
                 cooldownActive={cooldownActive}
                 setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
               />
-              <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
+              <MoleHole
+                xInit={hole_coords[1].x}
+                yInit={hole_coords[1].y}
+                id={1}
+                handler={handleRightclick}
+              />
             </Container>
             {/* Hole Nr. 2 */}
             <Container sortableChildren={true} mask={hole_masks.current[2]}>
@@ -454,11 +539,18 @@ export default function StandardGame() {
                 // key={moles[2].key}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
-                swingTimerDuration={swingTimerDuration}
+                swingTimerDuration={SWING_TIMER_DURATION}
                 cooldownActive={cooldownActive}
                 setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
               />
-              <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
+              <MoleHole
+                xInit={hole_coords[2].x}
+                yInit={hole_coords[2].y}
+                id={2}
+                handler={handleRightclick}
+              />
             </Container>
             {/* Hole Nr. 3 */}
             <Container sortableChildren={true} mask={hole_masks.current[3]}>
@@ -475,11 +567,18 @@ export default function StandardGame() {
                 // key={moles[3].key}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
-                swingTimerDuration={swingTimerDuration}
+                swingTimerDuration={SWING_TIMER_DURATION}
                 cooldownActive={cooldownActive}
                 setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
               />
-              <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
+              <MoleHole
+                xInit={hole_coords[3].x}
+                yInit={hole_coords[3].y}
+                id={3}
+                handler={handleRightclick}
+              />
             </Container>
             {/* Hole Nr. 4 */}
             <Container sortableChildren={true} mask={hole_masks.current[4]}>
@@ -496,17 +595,24 @@ export default function StandardGame() {
                 // key={moles[4].key]}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
-                swingTimerDuration={swingTimerDuration}
+                swingTimerDuration={SWING_TIMER_DURATION}
                 cooldownActive={cooldownActive}
                 setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
               />
-              <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
+              <MoleHole
+                xInit={hole_coords[4].x}
+                yInit={hole_coords[4].y}
+                id={4}
+                handler={handleRightclick}
+              />
             </Container>
           </Container>
         </Stage>
       </div>
       <UpgradeModal
-        stage={stage}
+        app={app}
         gameObserver={gameObserver}
         subtractLife={subtractLife}
         option1={option1}

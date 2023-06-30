@@ -2,7 +2,7 @@ import React from "react";
 import "../styles/UpgradeModal.css";
 
 export default function UpgradeModal({
-  stage,
+  app,
   gameObserver,
   subtractLife,
   option1,
@@ -11,7 +11,7 @@ export default function UpgradeModal({
 }) {
   function onClick(userChoice) {
     gameObserver.current.emit("reset");
-    stage.start();
+    app.start();
     gameObserver.current.on("evaded", subtractLife);
     handleUpgradeSelection(userChoice);
   }

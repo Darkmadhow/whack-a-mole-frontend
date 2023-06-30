@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useTick } from "@pixi/react";
+import { Sprite, useApp, useTick } from "@pixi/react";
 import moleStandard from "../img/mole.png";
 import moleStandardHit from "../img/mole_hit.png";
 
@@ -13,7 +13,10 @@ export default function MoleStandard({
   swingTimerDuration,
   cooldownActive,
   setCooldownActive,
+  plugged,
+  unplugger,
 }) {
+  const gameApp = useApp();
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
   const [moleImage, setMoleImage] = useState(moleStandard);
@@ -24,6 +27,7 @@ export default function MoleStandard({
   const my_decay = 20; //Decay rate of point value
   const jumpHeight = -125;
   const [stay_alive, stay_down] = [3000 / haste, 1000 / haste]; //Standard moles stay up for 3s base and down for 1s
+  const TRAP_TIMER = 3000; //the amount of time a mole will be stuck in a trap
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -104,12 +108,22 @@ export default function MoleStandard({
    */
   useEffect(() => {
     if (moleState === moleStates.alive) {
-      aliveTimer.current = setTimeout(() => {
-        //when alive timer's up, go to hiding state and reduce point value
-        setStateTimer(moleStates.down);
-        setMoleState(moleStates.dying);
-        my_value.current -= my_decay;
-      }, stay_alive);
+      //if there's a trap on the hole, stay up for longer
+      if (plugged[id] && plugged[id].name === "trap") {
+        aliveTimer.current = setTimeout(() => {
+          setTimeout(removePlug, TRAP_TIMER);
+          //when alive timer's up, go to hiding state and reduce point value
+          setStateTimer(moleStates.down);
+          setMoleState(moleStates.dying);
+          my_value.current -= my_decay;
+        }, stay_alive + TRAP_TIMER);
+      } else {
+        aliveTimer.current = setTimeout(() => {
+          setStateTimer(moleStates.down);
+          setMoleState(moleStates.dying);
+          my_value.current -= my_decay;
+        }, stay_alive);
+      }
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
@@ -175,6 +189,13 @@ export default function MoleStandard({
     setTimeout(() => {
       setCooldownActive(false);
     }, swingTimerDuration * rocket_mult);
+  }
+
+  //removes the deployed upgrade from the hole
+  function removePlug() {
+    plugged[id].dependantChild?.destroy();
+    plugged[id].destroy();
+    unplugger({ ...plugged, [id]: null });
   }
 
   return (

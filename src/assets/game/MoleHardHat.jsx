@@ -14,6 +14,8 @@ export default function MoleHardHat({
   swingTimerDuration,
   cooldownActive,
   setCooldownActive,
+  plugged,
+  unplugger,
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
@@ -29,6 +31,7 @@ export default function MoleHardHat({
   const spikedHammer = activeUpgrades.some(
     (upgrade) => upgrade.name === "spike_hammer"
   ); //hardhat mole needs to know wether spiked Hammer is active or not
+  const TRAP_TIMER = 3000; //the amount of time a mole will be stuck in a trap
 
   const spawnTimer = useRef(null);
   const aliveTimer = useRef(null);
@@ -105,12 +108,22 @@ export default function MoleHardHat({
    */
   useEffect(() => {
     if (moleState === moleStates.alive) {
-      aliveTimer.current = setTimeout(() => {
-        //when alive timer's up, go to hiding state and reduce point value
-        setStateTimer(moleStates.down);
-        setMoleState(moleStates.dying);
-        my_value.current -= my_decay;
-      }, stay_alive);
+      //if there's a trap on the hole, stay up for longer
+      if (plugged[id] && plugged[id].name === "trap") {
+        aliveTimer.current = setTimeout(() => {
+          setTimeout(removePlug, TRAP_TIMER);
+          //when alive timer's up, go to hiding state and reduce point value
+          setStateTimer(moleStates.down);
+          setMoleState(moleStates.dying);
+          my_value.current -= my_decay;
+        }, stay_alive + TRAP_TIMER);
+      } else {
+        aliveTimer.current = setTimeout(() => {
+          setStateTimer(moleStates.down);
+          setMoleState(moleStates.dying);
+          my_value.current -= my_decay;
+        }, stay_alive);
+      }
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
@@ -195,6 +208,13 @@ export default function MoleHardHat({
     //TODO: animate hat flying off
     setLife((prev) => prev - 1);
     setMoleImage(moleStandard);
+  }
+
+  //removes the deployed upgrade from the hole
+  function removePlug() {
+    plugged[id].dependantChild?.destroy();
+    plugged[id].destroy();
+    unplugger({ ...plugged, [id]: null });
   }
 
   return (

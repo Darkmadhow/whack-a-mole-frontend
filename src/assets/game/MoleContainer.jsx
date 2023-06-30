@@ -19,6 +19,8 @@ export default function MoleContainer({
   swingTimerDuration,
   cooldownActive,
   setCooldownActive,
+  plugged,
+  unplugger,
 }) {
   /*
    * replaceMole: replaces the string of the recently died mole with a new one
@@ -86,6 +88,8 @@ export default function MoleContainer({
           swingTimerDuration={swingTimerDuration}
           cooldownActive={cooldownActive}
           setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
     case "hardhat":
@@ -101,6 +105,8 @@ export default function MoleContainer({
           swingTimerDuration={swingTimerDuration}
           cooldownActive={cooldownActive}
           setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
     case "golden":
@@ -116,6 +122,8 @@ export default function MoleContainer({
           swingTimerDuration={swingTimerDuration}
           cooldownActive={cooldownActive}
           setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
     case "bunny":
@@ -131,6 +139,8 @@ export default function MoleContainer({
           swingTimerDuration={swingTimerDuration}
           cooldownActive={cooldownActive}
           setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
     case "shroom":
@@ -146,6 +156,8 @@ export default function MoleContainer({
           swingTimerDuration={swingTimerDuration}
           cooldownActive={cooldownActive}
           setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
     default:
@@ -161,6 +173,8 @@ export default function MoleContainer({
           swingTimerDuration={swingTimerDuration}
           cooldownActive={cooldownActive}
           setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
   }
