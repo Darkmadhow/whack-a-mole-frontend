@@ -60,7 +60,6 @@ export default function StandardGame() {
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
   const [rightClickDeploy, setRightClickDeploy] = useState(null);
-  const gameDiv = useRef();
 
   //subscribe to mole events
   const { token } = useContext(UserContext);
@@ -69,10 +68,14 @@ export default function StandardGame() {
     gameObserver.current.on("evaded", subtractLife);
     gameObserver.current.on("reset", replaceAllMoles);
 
+    document.addEventListener("contextmenu", handleContextMenu);
+
     return () => {
       gameObserver.current.off("dead", updateScore);
       gameObserver.current.off("evaded", subtractLife);
       gameObserver.current.off("reset", replaceAllMoles);
+
+      document.removeEventListener("contextmenu", handleContextMenu);
     };
   }, []);
 
@@ -232,6 +235,16 @@ export default function StandardGame() {
   }
 
   /*
+   * handleRightclick: places the currently selected deployable upgrade on the nearest mole hole
+   */
+  function handleRightclick(e) {
+    e.preventDefault();
+    if (!rightClickDeploy) return;
+    console.log("Putting down: ", rightClickDeploy);
+    const deploy = PIXI.Sprite.from(rightClickDeploy.asset);
+  }
+
+  /*
    * cycleRightClickDeploy: sets the current deployable object to the next one in the chosenUpgrades Array, excluding hammer upgrades
    */
   function cycleRightClickDeploy(deltaY) {
@@ -327,6 +340,11 @@ export default function StandardGame() {
     return [index1, index2];
   };
 
+  //prevents the Contextmenu from opening upon Rightclick
+  function handleContextMenu(e) {
+    e.preventDefault();
+  }
+
   /* ------------------------------ VISUAL OUTPUT ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
   //game over at 0 lives
@@ -362,118 +380,120 @@ export default function StandardGame() {
         <div className="lives">Lives: {lives}</div>
         <div className="level">Stage: {level}</div>
       </div>
-      <Stage {...stageProps} onMount={setStage}>
-        <Container sortableChildren={true}>
-          <Sprite texture={Texture.WHITE} width={1} height={1} />
-          <Mallet chosenUpgrades={chosenUpgrades} />
-          <Reticle />
-          {/* Hole Nr. 0 */}
-          <Container sortableChildren={true} mask={hole_masks.current[0]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={0}
-              // moleType={moles[0].moleType}
-              xInit={hole_coords[0].x}
-              yInit={hole_coords[0].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[0].key}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
+      <div className="game-container" onAuxClick={handleRightclick}>
+        <Stage {...stageProps} onMount={setStage}>
+          <Container sortableChildren={true}>
+            <Sprite texture={Texture.WHITE} width={1} height={1} />
+            <Mallet chosenUpgrades={chosenUpgrades} />
+            <Reticle />
+            {/* Hole Nr. 0 */}
+            <Container sortableChildren={true} mask={hole_masks.current[0]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={0}
+                // moleType={moles[0].moleType}
+                xInit={hole_coords[0].x}
+                yInit={hole_coords[0].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                // key={moles[0].key}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={swingTimerDuration}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+              />
+              <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
+            </Container>
+            {/* Hole Nr. 1 */}
+            <Container sortableChildren={true} mask={hole_masks.current[1]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={1}
+                // moleType={moles[1].moleType}
+                xInit={hole_coords[1].x}
+                yInit={hole_coords[1].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                // key={moles[1].key}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={swingTimerDuration}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+              />
+              <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
+            </Container>
+            {/* Hole Nr. 2 */}
+            <Container sortableChildren={true} mask={hole_masks.current[2]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={2}
+                // moleType={moles[2].moleType}
+                xInit={hole_coords[2].x}
+                yInit={hole_coords[2].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                // key={moles[2].key}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={swingTimerDuration}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+              />
+              <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
+            </Container>
+            {/* Hole Nr. 3 */}
+            <Container sortableChildren={true} mask={hole_masks.current[3]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={3}
+                // moleType={moles[3].moleType}
+                xInit={hole_coords[3].x}
+                yInit={hole_coords[3].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                // key={moles[3].key}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={swingTimerDuration}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+              />
+              <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
+            </Container>
+            {/* Hole Nr. 4 */}
+            <Container sortableChildren={true} mask={hole_masks.current[4]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={4}
+                // moleType={moles[4].moleType}
+                xInit={hole_coords[4].x}
+                yInit={hole_coords[4].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                // key={moles[4].key]}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={swingTimerDuration}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+              />
+              <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
+            </Container>
           </Container>
-          {/* Hole Nr. 1 */}
-          <Container sortableChildren={true} mask={hole_masks.current[1]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={1}
-              // moleType={moles[1].moleType}
-              xInit={hole_coords[1].x}
-              yInit={hole_coords[1].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[1].key}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
-          </Container>
-          {/* Hole Nr. 2 */}
-          <Container sortableChildren={true} mask={hole_masks.current[2]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={2}
-              // moleType={moles[2].moleType}
-              xInit={hole_coords[2].x}
-              yInit={hole_coords[2].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[2].key}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
-          </Container>
-          {/* Hole Nr. 3 */}
-          <Container sortableChildren={true} mask={hole_masks.current[3]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={3}
-              // moleType={moles[3].moleType}
-              xInit={hole_coords[3].x}
-              yInit={hole_coords[3].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[3].key}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
-          </Container>
-          {/* Hole Nr. 4 */}
-          <Container sortableChildren={true} mask={hole_masks.current[4]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={4}
-              // moleType={moles[4].moleType}
-              xInit={hole_coords[4].x}
-              yInit={hole_coords[4].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[4].key]}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
-          </Container>
-        </Container>
-      </Stage>
+        </Stage>
+      </div>
       <UpgradeModal
         stage={stage}
         gameObserver={gameObserver}
