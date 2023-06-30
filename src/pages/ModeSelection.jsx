@@ -15,7 +15,7 @@ export default function ModeSelection() {
         <Link to="/timeChallenge">
           <button>Time Challenge</button>
         </Link>
-        <Link to="/">
+        <Link to="/sixtySecondsCraze">
           <button>60 Seconds Craze</button>
         </Link>
       </div>

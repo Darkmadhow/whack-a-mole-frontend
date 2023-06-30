@@ -24,7 +24,7 @@ import cover from '../assets/img/cover.png';
 import trap from '../assets/img/trap.png';
 import '../styles/game.css';
 
-export default function TimeChallenge() {
+export default function SixtySecondsCraze() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
   /* ------------------------- -------------------- ------------------------- */
   //the stage component including all our sprites
@@ -33,10 +33,10 @@ export default function TimeChallenge() {
   const gameObserver = useRef(new EventEmitter());
   //initial score and lives
   const [score, setScore] = useState(0);
-  const [time, setTime] = useState(120);
+  const [time, setTime] = useState(60);
   const [level, setLevel] = useState(1);
   //difficulty speed multiplier
-  const haste = useRef(1);
+  const haste = useRef(1.5);
   //swing timer values
   const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
   const swingTimerDuration = 800; //the swing timer cooldown in ms
@@ -107,7 +107,7 @@ export default function TimeChallenge() {
 
   useEffect(() => {
     if (isGameOver) {
-      uploadHighScore(token, { score: score, gamemode: 'time' });
+      uploadHighScore(token, { score: score, gamemode: 'craze' });
       console.log('uploadHighScore:', score);
       clearInterval(gameTimer.current);
       console.log('game over: clear gameTimer', gameTimer.current);

@@ -10,6 +10,7 @@ import ProfileSettings from './pages/ProfileSettings';
 import UserHighscore from './pages/UserHighscore';
 import StandardGame from './pages/StandardGame';
 import TimeChallenge from './pages/TimeChallenge';
+import SixtySecondsCraze from './pages/SixtySecondsCraze';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       <Route path="/userhighscore" element={<UserHighscore />} />
       <Route path="/standardGame" element={<StandardGame />} />
       <Route path="/timeChallenge" element={<TimeChallenge />} />
+      <Route path="/sixtySecondsCraze" element={<SixtySecondsCraze />} />
     </Routes>
   );
 }

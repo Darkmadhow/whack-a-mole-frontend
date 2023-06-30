@@ -41,6 +41,9 @@ export default function StandardGame() {
   const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
   const swingTimerDuration = 800; //the swing timer cooldown in ms
 
+  //isGameOver
+  const [isGameOver, setIsGameOver] = useState(false);
+
   //the upgrades chosen by the user stored as string array and available upgrades
   const [chosenUpgrades, setChosenUpgrades] = useState([]);
   const [availableHammerUpgrades, setAvailableHammerUpgrades] = useState([
@@ -88,6 +91,17 @@ export default function StandardGame() {
   const subtractLife = useCallback(() => {
     setLives((prev) => prev - 1);
   }, [lives]);
+
+  useEffect(() => {
+    if (lives <= 0) setIsGameOver(true);
+  }, [lives]);
+
+  useEffect(() => {
+    if (isGameOver) {
+      uploadHighScore(token, { score: score, gamemode: "standard" });
+      console.log("uploadHighScore:", score);
+    }
+  }, [isGameOver]);
 
   /* ------------------------------ MOLE HANDLING ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
@@ -348,10 +362,7 @@ export default function StandardGame() {
   /* ------------------------------ VISUAL OUTPUT ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
   //game over at 0 lives
-  if (lives <= -100) {
-    //upload Highscore to the backend
-    uploadHighScore(token, { score: score, gamemode: "standard" });
-
+  if (isGameOver) {
     return (
       <div className="game">
         <div className="game-over-screen">
