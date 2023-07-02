@@ -206,7 +206,6 @@ export default function MoleGolden({
 
   //removes the deployed upgrade from the hole
   function removePlug() {
-    console.log("Removing :", id, plugged[id], " from ", plugged);
     plugged[id]?.dependantChild?.destroy();
     plugged[id]?.destroy();
     unplugger((prev) => {

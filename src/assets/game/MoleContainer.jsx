@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import MoleStandard from './MoleStandard';
-import MoleGolden from './MoleGolden';
-import MoleHardHat from './MoleHardHat';
-import MolePeeker from './MolePeeker';
-import MoleBunny from './MoleBunny';
-import MoleShroom from './MoleShroom';
+import { useEffect } from "react";
+import MoleStandard from "./MoleStandard";
+import MoleGolden from "./MoleGolden";
+import MoleHardHat from "./MoleHardHat";
+import MolePeeker from "./MolePeeker";
+import MoleBunny from "./MoleBunny";
+import MoleShroom from "./MoleShroom";
 
 export default function MoleContainer({
   emitter,
@@ -28,29 +28,33 @@ export default function MoleContainer({
    */
   function replaceMole(e) {
     if (e.id !== id) return; //if some other mole dies, ignore the event
+    if (plugged[id] === "cover") {
+      console.log("I'm blocked ", id);
+      // return;
+    }
     const rnd = Math.floor(Math.random() * 13);
-    let newMole = 'standard';
+    let newMole = "standard";
     switch (rnd) {
       case 0:
       case 1:
-        newMole = 'peeker';
+        newMole = "peeker";
         break;
       case 2:
       case 3:
-        newMole = 'hardhat';
+        newMole = "hardhat";
         break;
       case 4:
-        newMole = 'golden';
+        newMole = "golden";
         break;
       case 5:
       case 6:
-        newMole = 'bunny';
+        newMole = "bunny";
         break;
       case 7:
-        newMole = 'shroom';
+        newMole = "shroom";
         break;
       default:
-        newMole = 'standard';
+        newMole = "standard";
         break;
     }
 
@@ -65,17 +69,17 @@ export default function MoleContainer({
 
   //if my mole dies, replace it with a new one
   useEffect(() => {
-    emitter.on('dead', replaceMole);
+    emitter.on("dead", replaceMole);
     // emitter.on('reset', replaceAllMoles);
     return () => {
-      emitter.off('dead', replaceMole);
+      emitter.off("dead", replaceMole);
       // emitter.off('reset', replaceAllMoles);
     };
   }, []);
 
   //depending on the moleType, create a different mole
   switch (moles[id].moleType) {
-    case 'peeker':
+    case "peeker":
       return (
         <MolePeeker
           xInit={xInit}
@@ -92,7 +96,7 @@ export default function MoleContainer({
           unplugger={unplugger}
         />
       );
-    case 'hardhat':
+    case "hardhat":
       return (
         <MoleHardHat
           xInit={xInit}
@@ -109,7 +113,7 @@ export default function MoleContainer({
           unplugger={unplugger}
         />
       );
-    case 'golden':
+    case "golden":
       return (
         <MoleGolden
           xInit={xInit}
@@ -126,7 +130,7 @@ export default function MoleContainer({
           unplugger={unplugger}
         />
       );
-    case 'bunny':
+    case "bunny":
       return (
         <MoleBunny
           xInit={xInit}
@@ -143,7 +147,7 @@ export default function MoleContainer({
           unplugger={unplugger}
         />
       );
-    case 'shroom':
+    case "shroom":
       return (
         <MoleShroom
           xInit={xInit}

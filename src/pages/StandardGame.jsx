@@ -115,11 +115,6 @@ export default function StandardGame() {
     }
   }, [isGameOver]);
 
-  useEffect(
-    () => console.log("acutal hole state: ", pluggedHoles),
-    [pluggedHoles]
-  );
-
   /* ------------------------------ MOLE HANDLING ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
   //counter for the moles in each hole, as iterable object
