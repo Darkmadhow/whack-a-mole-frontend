@@ -30,3 +30,20 @@
   flex-direction: column;
   align-items: center;
 }
+
+.game .chosen-upgrades {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
+  position: absolute;
+  right: 2rem;
+  top: 50%;
+}
+
+.game .chosen-upgrades img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background-color: #fffa;
+  padding: 0.5rem;
+}

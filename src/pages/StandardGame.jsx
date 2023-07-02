@@ -61,9 +61,9 @@ export default function StandardGame() {
   const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
     useState([
       { name: "bomb", asset: bomb },
-      { name: "cover", asset: cover },
+      // { name: "cover", asset: cover }, //TODO: What does cover do? How will it work?
       { name: "trap", asset: trap },
-      { name: "drone", asset: droneHammer },
+      // { name: "drone", asset: droneHammer },
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
   const [rightClickDeploy, setRightClickDeploy] = useState(null);
@@ -378,6 +378,25 @@ export default function StandardGame() {
 
   /* ------------------------------ HELPER FUNCTIONS ------------------------------ */
   /* ------------------------------ ---------------- ------------------------------ */
+
+  //------------------- Animate the upgrade icons
+  const [cooldownProgress, setCooldownProgress] = useState(0);
+
+  useEffect(() => {
+    if (deployableCooldown) {
+      setCooldownProgress(100);
+
+      const intervalId = setInterval(() => {
+        setCooldownProgress((prevProgress) =>
+          prevProgress > 2 ? prevProgress - 1 : 0
+        );
+      }, DEPLOY_CD / 100);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [deployableCooldown]);
+  //---------------------------------------------
+
   /*
    * drawCircleMask: draws a circular Graphics object with red fill
    * params: x,y define the position and the center of the circle
@@ -473,6 +492,26 @@ export default function StandardGame() {
         <div className="level">Stage: {level}</div>
       </div>
       <div className="game-container">
+        <div className="chosen-upgrades">
+          {chosenUpgrades.map((upgrade) => (
+            <img
+              src={upgrade.asset}
+              className={`${
+                upgrade.name === rightClickDeploy?.name ? "selected" : ""
+              } ${deployableCooldown ? "cooldown" : ""}`}
+              key={upgrade.name}
+              style={
+                upgrade.name === rightClickDeploy?.name
+                  ? {
+                      backgroundImage: `conic-gradient(#f00 0% ${
+                        100 - cooldownProgress
+                      }%, transparent ${100 - cooldownProgress}% 100%)`,
+                    }
+                  : {}
+              }
+            />
+          ))}
+        </div>
         <Stage {...stageProps} onMount={setApp}>
           <Container sortableChildren={true}>
             <Sprite texture={Texture.WHITE} width={1} height={1} zIndex={99} />

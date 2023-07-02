@@ -28,10 +28,6 @@ export default function MoleContainer({
    */
   function replaceMole(e) {
     if (e.id !== id) return; //if some other mole dies, ignore the event
-    if (plugged[id] === "cover") {
-      console.log("I'm blocked ", id);
-      // return;
-    }
     const rnd = Math.floor(Math.random() * 13);
     let newMole = "standard";
     switch (rnd) {
