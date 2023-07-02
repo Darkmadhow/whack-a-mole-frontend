@@ -115,6 +115,11 @@ export default function StandardGame() {
     }
   }, [isGameOver]);
 
+  useEffect(
+    () => console.log("acutal hole state: ", pluggedHoles),
+    [pluggedHoles]
+  );
+
   /* ------------------------------ MOLE HANDLING ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
   //counter for the moles in each hole, as iterable object
@@ -275,18 +280,19 @@ export default function StandardGame() {
     deploy.x = x;
     deploy.y = y;
     deploy.name = rightClickDeploy.name;
+    deploy.id = id;
 
     //find out on which layer the deployable needs to be rendered
     switch (rightClickDeploy.name) {
       case "bomb":
         deploy.zIndex = 1;
-        deploy.addEventListener("boom", function (e) {
-          setPluggedHoles({ ...pluggedHoles, [e.source]: null });
-          this.destroy();
+        gameObserver.current.once("boom", function (e) {
+          // setPluggedHoles({ ...pluggedHoles, [e.source]: null });
+          // deploy.destroy();
+          container.removeChild(deploy);
         });
         setTimeout(() => {
           gameObserver.current.emit("boom", { source: id });
-          console.log("BOOM");
         }, BOMB_TIMER);
         break;
       case "cover":

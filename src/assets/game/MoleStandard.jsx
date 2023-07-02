@@ -84,6 +84,7 @@ export default function MoleStandard({
   */
   useEffect(() => {
     emitter.on("reset_incoming", stopAllTimeouts);
+    emitter.on("boom", killMoleForcefully);
 
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
@@ -91,6 +92,7 @@ export default function MoleStandard({
     }, getRandomTimeout());
     return () => {
       emitter.off("reset_incoming", stopAllTimeouts);
+      emitter.off("boom", killMoleForcefully);
 
       // clearTimeout(aliveTimer.current);
       // clearTimeout(downTimer.current);
@@ -160,9 +162,16 @@ export default function MoleStandard({
     clearTimeout(spawnTimer.current);
   }
 
-  function killMole() {
+  function killMoleForcefully() {
+    killMole(true);
+  }
+  /*
+   * killMole initiates the mole despawning
+   * params: force, boolean for bypassing hammer swing time CD
+   */
+  function killMole(force) {
     // Check if the cooldown is active
-    if (cooldownActive) return;
+    if (cooldownActive && !force) return;
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
@@ -197,9 +206,12 @@ export default function MoleStandard({
 
   //removes the deployed upgrade from the hole
   function removePlug() {
+    console.log("Removing :", id, plugged[id], " from ", plugged);
     plugged[id]?.dependantChild?.destroy();
     plugged[id]?.destroy();
-    unplugger({ ...plugged, [id]: null });
+    unplugger((prev) => {
+      return { ...prev, [id]: null };
+    });
   }
 
   return (
@@ -215,7 +227,7 @@ export default function MoleStandard({
           ? "none"
           : "static"
       }
-      pointerdown={killMole}
+      pointerdown={() => killMole(false)}
     ></Sprite>
   );
 }
