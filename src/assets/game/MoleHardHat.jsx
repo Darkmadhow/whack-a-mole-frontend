@@ -19,6 +19,7 @@ export default function MoleHardHat({
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
+  const [anchorY, setAnchorY] = useState(0.5);
   const [moleImage, setMoleImage] = useState(moleHardHat);
   const time = useRef(0);
   const my_id = useRef(id);
@@ -173,6 +174,9 @@ export default function MoleHardHat({
     // Check if the cooldown is active
     if (cooldownActive) return;
 
+    //tell the hammer to animate
+    emitter.emit("swing", { speed: haste });
+
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
     setStateTimer(moleStates.dead);
@@ -208,6 +212,12 @@ export default function MoleHardHat({
   }
 
   function subtractMoleLife() {
+    // Check if the cooldown is active
+    if (cooldownActive) return;
+
+    //tell the hammer to animate
+    emitter.emit("swing", { speed: haste });
+
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
       (upgrade) => upgrade.name === "rocket_hammer"
@@ -222,6 +232,8 @@ export default function MoleHardHat({
     //TODO: animate hat flying off
     setLife((prev) => prev - 1);
     setMoleImage(moleStandard);
+    //adjust y values for the new mole Sprite
+    setAnchorY((prev) => prev - 0.05);
   }
 
   //removes the deployed upgrade from the hole
@@ -236,7 +248,7 @@ export default function MoleHardHat({
   return (
     <Sprite
       image={moleImage}
-      anchor={0.5}
+      anchor={[0.5, anchorY]}
       scale={{ x: 1, y: 1 }}
       x={x}
       y={y + 90}

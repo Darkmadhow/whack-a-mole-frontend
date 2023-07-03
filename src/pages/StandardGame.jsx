@@ -516,7 +516,11 @@ export default function StandardGame() {
         <Stage {...stageProps} onMount={setApp}>
           <Container sortableChildren={true}>
             <Sprite texture={Texture.WHITE} width={1} height={1} zIndex={99} />
-            <Mallet chosenUpgrades={chosenUpgrades} />
+            <Mallet
+              chosenUpgrades={chosenUpgrades}
+              emitter={gameObserver.current}
+              ANIMATION_DURATION={SWING_TIMER_DURATION}
+            />
             <Reticle />
             {/* Hole Nr. 0 */}
             <Container sortableChildren={true} mask={hole_masks.current[0]}>

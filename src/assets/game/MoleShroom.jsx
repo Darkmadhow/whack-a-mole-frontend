@@ -147,6 +147,9 @@ export default function MoleBunny({
     // Check if the cooldown is active
     if (cooldownActive) return;
 
+    //tell the hammer to animate
+    emitter.emit("swing", { speed: haste });
+
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
     setStateTimer(moleStates.dead);
