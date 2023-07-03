@@ -4,26 +4,27 @@ import React, {
   useEffect,
   useContext,
   useCallback,
-} from "react";
-import { NavLink } from "react-router-dom";
-import { Stage, Sprite, Container } from "@pixi/react";
-import { Texture, Graphics, Sprite as PIXISprite, Point } from "pixi.js";
-import { EventEmitter } from "@pixi/utils";
-import { UserContext } from "../userContext";
-import { uploadHighScore } from "../utils/scores";
-import UpgradeModal from "../components/UpgradeModal";
-import MoleHole from "../assets/game/MoleHole";
-import MoleContainer from "../assets/game/MoleContainer";
-import Mallet from "../assets/game/Mallet";
-import Reticle from "../assets/game/Reticle";
-import rocketHammer from "../assets/img/mallet_rocket.png";
-import spikeHammer from "../assets/img/mallet_spikey.png";
-import droneHammer from "../assets/img/drone.png";
-import bomb from "../assets/img/bomb.png";
-import cover from "../assets/img/cover.png";
-import trap from "../assets/img/trap.png";
-import trap_foreground from "../assets/img/trap_foreground.png";
-import "../styles/game.css";
+} from 'react';
+import { NavLink } from 'react-router-dom';
+import { Stage, Sprite, Container } from '@pixi/react';
+import { Texture, Graphics, Sprite as PIXISprite, Point } from 'pixi.js';
+import { EventEmitter } from '@pixi/utils';
+import { sound } from '@pixi/sound';
+import { UserContext } from '../userContext';
+import { uploadHighScore } from '../utils/scores';
+import UpgradeModal from '../components/UpgradeModal';
+import MoleHole from '../assets/game/MoleHole';
+import MoleContainer from '../assets/game/MoleContainer';
+import Mallet from '../assets/game/Mallet';
+import Reticle from '../assets/game/Reticle';
+import rocketHammer from '../assets/img/mallet_rocket.png';
+import spikeHammer from '../assets/img/mallet_spikey.png';
+import droneHammer from '../assets/img/drone.png';
+import bomb from '../assets/img/bomb.png';
+import cover from '../assets/img/cover.png';
+import trap from '../assets/img/trap.png';
+import trap_foreground from '../assets/img/trap_foreground.png';
+import '../styles/game.css';
 
 export default function StandardGame() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
@@ -51,8 +52,8 @@ export default function StandardGame() {
   //the upgrades chosen by the user stored as string array and available upgrades
   const [chosenUpgrades, setChosenUpgrades] = useState([]);
   const [availableHammerUpgrades, setAvailableHammerUpgrades] = useState([
-    { name: "rocket_hammer", asset: rocketHammer },
-    { name: "spike_hammer", asset: spikeHammer },
+    { name: 'rocket_hammer', asset: rocketHammer },
+    { name: 'spike_hammer', asset: spikeHammer },
   ]);
   const [[option1, option2], setOptions] = useState([
     { name: null, asset: null },
@@ -60,9 +61,9 @@ export default function StandardGame() {
   ]);
   const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
     useState([
-      { name: "bomb", asset: bomb },
+      { name: 'bomb', asset: bomb },
       // { name: "cover", asset: cover }, //TODO: What does cover do? How will it work?
-      { name: "trap", asset: trap },
+      { name: 'trap', asset: trap },
       // { name: "drone", asset: droneHammer },
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
@@ -79,18 +80,24 @@ export default function StandardGame() {
   //subscribe to mole events
   const { token } = useContext(UserContext);
   useEffect(() => {
-    gameObserver.current.on("dead", updateScore);
-    gameObserver.current.on("evaded", subtractLife);
-    gameObserver.current.on("reset", replaceAllMoles);
+    gameObserver.current.on('dead', updateScore);
+    gameObserver.current.on('evaded', subtractLife);
+    gameObserver.current.on('reset', replaceAllMoles);
 
-    document.addEventListener("contextmenu", handleContextMenu);
+    sound.add('hitMole', {
+      autoplay: false,
+      url: 'src/assets/sounds/cartoon_squeeze_object_into_tight_space.mp3',
+      loaded: () => console.log('sound loaded'),
+    });
+
+    document.addEventListener('contextmenu', handleContextMenu);
 
     return () => {
-      gameObserver.current.off("dead", updateScore);
-      gameObserver.current.off("evaded", subtractLife);
-      gameObserver.current.off("reset", replaceAllMoles);
+      gameObserver.current.off('dead', updateScore);
+      gameObserver.current.off('evaded', subtractLife);
+      gameObserver.current.off('reset', replaceAllMoles);
 
-      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener('contextmenu', handleContextMenu);
     };
   }, []);
 
@@ -110,8 +117,8 @@ export default function StandardGame() {
 
   useEffect(() => {
     if (isGameOver) {
-      uploadHighScore(token, { score: score, gamemode: "standard" });
-      console.log("uploadHighScore:", score);
+      uploadHighScore(token, { score: score, gamemode: 'standard' });
+      console.log('uploadHighScore:', score);
     }
   }, [isGameOver]);
 
@@ -128,38 +135,38 @@ export default function StandardGame() {
 
   //current mole type in each hole, as a string array
   const [moles, setMoles] = useState([
-    { moleType: "standard", key: 1000 },
-    { moleType: "standard", key: 2000 },
-    { moleType: "standard", key: 3000 },
-    { moleType: "standard", key: 4000 },
-    { moleType: "standard", key: 5000 },
+    { moleType: 'standard', key: 1000 },
+    { moleType: 'standard', key: 2000 },
+    { moleType: 'standard', key: 3000 },
+    { moleType: 'standard', key: 4000 },
+    { moleType: 'standard', key: 5000 },
   ]);
 
   function replaceAllMoles() {
     const molesTemp = moles.map((mole) => {
       const rnd = Math.floor(Math.random() * 13);
-      let newMole = "standard";
+      let newMole = 'standard';
       switch (rnd) {
         case 0:
         case 1:
-          newMole = "peeker";
+          newMole = 'peeker';
           break;
         case 2:
         case 3:
-          newMole = "hardhat";
+          newMole = 'hardhat';
           break;
         case 4:
-          newMole = "golden";
+          newMole = 'golden';
           break;
         case 5:
         case 6:
-          newMole = "bunny";
+          newMole = 'bunny';
           break;
         case 7:
-          newMole = "shroom";
+          newMole = 'shroom';
           break;
         default:
-          newMole = "standard";
+          newMole = 'standard';
           break;
       }
 
@@ -219,9 +226,9 @@ export default function StandardGame() {
     if (!(molecounter % 5)) {
       const options = getUpgradeOptions();
       if (!options) return;
-      gameObserver.current.off("evaded", subtractLife);
+      gameObserver.current.off('evaded', subtractLife);
       setLevel((prev) => prev + 1);
-      gameObserver.current.emit("reset_incoming");
+      gameObserver.current.emit('reset_incoming');
       setOptions(options);
       app.stop();
       setTimeout(() => {
@@ -279,21 +286,21 @@ export default function StandardGame() {
 
     //find out on which layer the deployable needs to be rendered
     switch (rightClickDeploy.name) {
-      case "bomb":
+      case 'bomb':
         deploy.zIndex = 1;
-        gameObserver.current.once("boom", function (e) {
+        gameObserver.current.once('boom', function (e) {
           // setPluggedHoles({ ...pluggedHoles, [e.source]: null });
           // deploy.destroy();
           container.removeChild(deploy);
         });
         setTimeout(() => {
-          gameObserver.current.emit("boom", { source: id });
+          gameObserver.current.emit('boom', { source: id });
         }, BOMB_TIMER);
         break;
-      case "cover":
+      case 'cover':
         deploy.zIndex = 3;
         break;
-      case "trap":
+      case 'trap':
         deploy.zIndex = 0;
         deploy.y -= 10;
         //add foreground
@@ -302,7 +309,7 @@ export default function StandardGame() {
         deploy.dependantChild = foreground;
         break;
       //the drone gets a bit more complicated...
-      case "drone":
+      case 'drone':
         deploy.zIndex = 3;
         deployDrone(deploy);
         return;
@@ -312,6 +319,11 @@ export default function StandardGame() {
     triggerDeployCooldown();
     setPluggedHoles({ ...pluggedHoles, [id]: deploy });
     container.addChild(deploy);
+  }
+
+  function playSound(name) {
+    sound.play(name);
+    console.log('play sound', name);
   }
 
   function deployDrone(drone) {
@@ -334,7 +346,7 @@ export default function StandardGame() {
     //exclude hammer upgrades
     const upgrades = chosenUpgrades.filter(
       (upgrade) =>
-        upgrade.name !== "spike_hammer" && upgrade.name !== "rocket_hammer"
+        upgrade.name !== 'spike_hammer' && upgrade.name !== 'rocket_hammer'
     );
     //if there's just one upgrade, pick that
     if (upgrades.length == 1) {
@@ -497,8 +509,8 @@ export default function StandardGame() {
             <img
               src={upgrade.asset}
               className={`${
-                upgrade.name === rightClickDeploy?.name ? "selected" : ""
-              } ${deployableCooldown ? "cooldown" : ""}`}
+                upgrade.name === rightClickDeploy?.name ? 'selected' : ''
+              } ${deployableCooldown ? 'cooldown' : ''}`}
               key={upgrade.name}
               style={
                 upgrade.name === rightClickDeploy?.name
@@ -537,6 +549,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[0].x}
@@ -565,6 +578,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[1].x}
@@ -593,6 +607,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[2].x}
@@ -621,6 +636,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[3].x}
@@ -649,6 +665,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[4].x}
