@@ -25,16 +25,16 @@ import trap from "../assets/img/trap.png";
 import trap_foreground from "../assets/img/trap_foreground.png";
 import "../styles/game.css";
 
-export default function StandardGame() {
+export default function TimeChallenge() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
   /* ------------------------- -------------------- ------------------------- */
-  //the app component including all our sprites
+  //the stage component including all our sprites
   const [app, setApp] = useState();
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
-  //initial score, lives and difficulty level
+  //initial score and lives
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(5);
+  const [time, setTime] = useState(120);
   const [level, setLevel] = useState(1);
   //difficulty speed multiplier
   const haste = useRef(1);
@@ -45,6 +45,7 @@ export default function StandardGame() {
   const MAX_TOLERANCE = 150; //the distance in pixels within the player has to rightclick to place something on a hole
   const BOMB_TIMER = 4000; //time before bomb explodes
 
+  const gameTimer = useRef(null);
   const [isGameOver, setIsGameOver] = useState(false);
 
   //the upgrades chosen by the user stored as string array and available upgrades
@@ -60,7 +61,7 @@ export default function StandardGame() {
   const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
     useState([
       { name: "bomb", asset: bomb },
-      // { name: "cover", asset: cover }, //TODO: What does cover do? How will it work?
+      // { name: "cover", asset: cover },
       { name: "trap", asset: trap },
       // { name: "drone", asset: droneHammer },
     ]);
@@ -80,17 +81,22 @@ export default function StandardGame() {
   //subscribe to mole events
   useEffect(() => {
     gameObserver.current.on("dead", updateScore);
-    gameObserver.current.on("evaded", subtractLife);
+    gameObserver.current.on("evaded", subtractTime);
     gameObserver.current.on("reset", replaceAllMoles);
 
     //prevent right-click to open context menu
     document.addEventListener("contextmenu", handleContextMenu);
 
+    gameTimer.current = setInterval(() => {
+      setTime((prev) => prev - 1);
+    }, 1000);
+
     return () => {
       gameObserver.current.off("dead", updateScore);
-      gameObserver.current.off("evaded", subtractLife);
+      gameObserver.current.off("evaded", subtractTime);
       gameObserver.current.off("reset", replaceAllMoles);
 
+      clearInterval(gameTimer.current);
       document.removeEventListener("contextmenu", handleContextMenu);
     };
   }, []);
@@ -98,21 +104,24 @@ export default function StandardGame() {
   /* ------------------------------ SCORING FUNCTIONS ------------------------------ */
   /* ------------------------------ ----------------- ------------------------------ */
   function updateScore(e) {
-    setScore((prev) => prev + e.value);
+    const score = e.value < 0 ? 0 : e.value;
+    setScore((prev) => prev + score);
+    setTime((prev) => prev + e.time_value);
   }
 
-  const subtractLife = useCallback(() => {
-    setLives((prev) => prev - 1);
-  }, [lives]);
+  const subtractTime = useCallback((e) => {
+    setTime((prev) => prev - e.time_value);
+  }, []);
 
   useEffect(() => {
-    if (lives <= 0) setIsGameOver(true);
-  }, [lives]);
+    if (time <= 0) setIsGameOver(true);
+  }, [time]);
 
   useEffect(() => {
     if (isGameOver && token) {
-      uploadHighScore(token, { score: score, gamemode: "standard" });
+      uploadHighScore(token, { score: score, gamemode: "time" });
     }
+    if (isGameOver) clearInterval(gameTimer.current);
   }, [isGameOver]);
 
   /* ------------------------------ MOLE HANDLING ------------------------------ */
@@ -181,7 +190,6 @@ export default function StandardGame() {
       backgroundAlpha: 0,
     },
   };
-
   const hole_coords = [
     { x: 300, y: 200 },
     { x: 600, y: 200 },
@@ -189,7 +197,6 @@ export default function StandardGame() {
     { x: 400, y: 400 },
     { x: 700, y: 400 },
   ];
-
   const hole_masks = useRef({
     0: drawCircleMask(hole_coords[0].x, hole_coords[0].y),
     1: drawCircleMask(hole_coords[1].x, hole_coords[1].y),
@@ -202,7 +209,7 @@ export default function StandardGame() {
   /* ------------------------------ --------------------- ------------------------------ */
 
   /*
-   * increases difficulty over time and triggers upgrade selection
+   * increases difficulty over time
    */
   useEffect(() => {
     //count moles hit
@@ -219,7 +226,7 @@ export default function StandardGame() {
     if (!(molecounter % 20)) {
       const options = getUpgradeOptions();
       if (!options) return;
-      gameObserver.current.off("evaded", subtractLife);
+      gameObserver.current.off("evaded", subtractTime);
       setLevel((prev) => prev + 1);
       gameObserver.current.emit("reset_incoming");
       setOptions(options);
@@ -470,7 +477,7 @@ export default function StandardGame() {
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
-          <a href="/standardgame">
+          <a href="/timechallenge">
             <button>Play again</button>
           </a>
           <Stage
@@ -489,7 +496,7 @@ export default function StandardGame() {
       <div className="game-stats">
         <NavLink to="/modeselection">Back</NavLink>
         <div className="score-display">Score: {score}</div>
-        <div className="lives">Lives: {lives}</div>
+        <div className="lives">Time: {time}</div>
         <div className="level">Stage: {level}</div>
       </div>
       <div className="game-container">
@@ -654,7 +661,7 @@ export default function StandardGame() {
       <UpgradeModal
         app={app}
         gameObserver={gameObserver}
-        subtractLife={subtractLife}
+        subtractLife={subtractTime}
         option1={option1}
         option2={option2}
         handleUpgradeSelection={handleUpgradeSelection}

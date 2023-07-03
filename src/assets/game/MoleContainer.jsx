@@ -4,15 +4,23 @@ import MoleGolden from "./MoleGolden";
 import MoleHardHat from "./MoleHardHat";
 import MolePeeker from "./MolePeeker";
 import MoleBunny from "./MoleBunny";
+import MoleShroom from "./MoleShroom";
 
 export default function MoleContainer({
   emitter,
   id,
-  moleType,
   xInit,
   yInit,
   moles,
+  setMoles,
   setMoleCount,
+  haste,
+  activeUpgrades,
+  swingTimerDuration,
+  cooldownActive,
+  setCooldownActive,
+  plugged,
+  unplugger,
 }) {
   /*
    * replaceMole: replaces the string of the recently died mole with a new one
@@ -38,12 +46,18 @@ export default function MoleContainer({
       case 6:
         newMole = "bunny";
         break;
+      case 7:
+        newMole = "shroom";
+        break;
       default:
         newMole = "standard";
         break;
     }
-    // console.log("new mole will be a ", newMole, rnd);
-    moles.splice(e.id, 1, newMole);
+
+    moles[e.id].moleType = newMole;
+    moles[e.id].key++;
+    setMoles(moles);
+
     setMoleCount((prev) => {
       return { ...prev, [e.id]: prev[e.id] + 1 };
     });
@@ -52,11 +66,15 @@ export default function MoleContainer({
   //if my mole dies, replace it with a new one
   useEffect(() => {
     emitter.on("dead", replaceMole);
-    return () => emitter.off("dead", replaceMole);
+    // emitter.on('reset', replaceAllMoles);
+    return () => {
+      emitter.off("dead", replaceMole);
+      // emitter.off('reset', replaceAllMoles);
+    };
   }, []);
 
   //depending on the moleType, create a different mole
-  switch (moleType) {
+  switch (moles[id].moleType) {
     case "peeker":
       return (
         <MolePeeker
@@ -64,6 +82,14 @@ export default function MoleContainer({
           yInit={yInit - 10}
           emitter={emitter}
           id={id}
+          haste={haste}
+          key={moles[id].key}
+          activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
     case "hardhat":
@@ -73,6 +99,14 @@ export default function MoleContainer({
           yInit={yInit + 12}
           emitter={emitter}
           id={id}
+          haste={haste}
+          key={moles[id].key}
+          activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
     case "golden":
@@ -82,15 +116,66 @@ export default function MoleContainer({
           yInit={yInit + 10}
           emitter={emitter}
           id={id}
+          haste={haste}
+          key={moles[id].key}
+          activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
         />
       );
     case "bunny":
       return (
-        <MoleBunny xInit={xInit} yInit={yInit + 15} emitter={emitter} id={id} />
+        <MoleBunny
+          xInit={xInit}
+          yInit={yInit + 15}
+          emitter={emitter}
+          id={id}
+          haste={haste}
+          key={moles[id].key}
+          activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
+        />
+      );
+    case "shroom":
+      return (
+        <MoleShroom
+          xInit={xInit}
+          yInit={yInit + 15}
+          emitter={emitter}
+          id={id}
+          haste={haste}
+          key={moles[id].key}
+          activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
+        />
       );
     default:
       return (
-        <MoleStandard xInit={xInit} yInit={yInit} emitter={emitter} id={id} />
+        <MoleStandard
+          xInit={xInit}
+          yInit={yInit}
+          emitter={emitter}
+          id={id}
+          haste={haste}
+          key={moles[id].key}
+          activeUpgrades={activeUpgrades}
+          swingTimerDuration={swingTimerDuration}
+          cooldownActive={cooldownActive}
+          setCooldownActive={setCooldownActive}
+          plugged={plugged}
+          unplugger={unplugger}
+        />
       );
   }
 }

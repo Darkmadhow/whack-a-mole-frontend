@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { NavLink } from "react-router-dom";
 import { Stage, Sprite, Container } from "@pixi/react";
-import { Texture, Graphics, Sprite as PIXISprite } from "pixi.js";
+import { Texture, Graphics } from "pixi.js";
 import { EventEmitter } from "@pixi/utils";
 import { UserContext } from "../userContext";
 import { uploadHighScore } from "../utils/scores";
@@ -22,29 +22,26 @@ import droneHammer from "../assets/img/drone.png";
 import bomb from "../assets/img/bomb.png";
 import cover from "../assets/img/cover.png";
 import trap from "../assets/img/trap.png";
-import trap_foreground from "../assets/img/trap_foreground.png";
 import "../styles/game.css";
 
-export default function StandardGame() {
+export default function SixtySecondsCraze() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
   /* ------------------------- -------------------- ------------------------- */
   //the app component including all our sprites
   const [app, setApp] = useState();
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
-  //initial score, lives and difficulty level
+  //initial score and lives
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(5);
+  const [time, setTime] = useState(60);
   const [level, setLevel] = useState(1);
   //difficulty speed multiplier
-  const haste = useRef(1);
+  const haste = useRef(1.5);
   //swing timer values
   const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
-  const SWING_TIMER_DURATION = 800; //the swing timer cooldown in ms
-  const DEPLOY_CD = 5000; //the time players have to wait between deployables
-  const MAX_TOLERANCE = 150; //the distance in pixels within the player has to rightclick to place something on a hole
-  const BOMB_TIMER = 4000; //time before bomb explodes
+  const SWING_TIMER_DURATION = 300; //the swing timer cooldown in ms
 
+  const gameTimer = useRef(null);
   const [isGameOver, setIsGameOver] = useState(false);
 
   //the upgrades chosen by the user stored as string array and available upgrades
@@ -60,9 +57,9 @@ export default function StandardGame() {
   const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
     useState([
       { name: "bomb", asset: bomb },
-      // { name: "cover", asset: cover }, //TODO: What does cover do? How will it work?
+      // { name: 'cover', asset: cover },
       { name: "trap", asset: trap },
-      // { name: "drone", asset: droneHammer },
+      // { name: 'drone', asset: droneHammer },
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
   const [rightClickDeploy, setRightClickDeploy] = useState(null);
@@ -80,17 +77,22 @@ export default function StandardGame() {
   //subscribe to mole events
   useEffect(() => {
     gameObserver.current.on("dead", updateScore);
-    gameObserver.current.on("evaded", subtractLife);
+    gameObserver.current.on("evaded", subtractScore);
     gameObserver.current.on("reset", replaceAllMoles);
 
     //prevent right-click to open context menu
     document.addEventListener("contextmenu", handleContextMenu);
 
+    gameTimer.current = setInterval(() => {
+      setTime((prev) => prev - 1);
+    }, 1000);
+
     return () => {
       gameObserver.current.off("dead", updateScore);
-      gameObserver.current.off("evaded", subtractLife);
+      gameObserver.current.off("evaded", subtractScore);
       gameObserver.current.off("reset", replaceAllMoles);
 
+      clearInterval(gameTimer.current);
       document.removeEventListener("contextmenu", handleContextMenu);
     };
   }, []);
@@ -98,21 +100,23 @@ export default function StandardGame() {
   /* ------------------------------ SCORING FUNCTIONS ------------------------------ */
   /* ------------------------------ ----------------- ------------------------------ */
   function updateScore(e) {
-    setScore((prev) => prev + e.value);
+    const score = e.value < 0 ? 0 : e.value;
+    setScore((prev) => prev + score);
   }
 
-  const subtractLife = useCallback(() => {
-    setLives((prev) => prev - 1);
-  }, [lives]);
+  const subtractScore = useCallback((e) => {
+    setScore((prev) => prev - e.craze_value);
+  }, []);
 
   useEffect(() => {
-    if (lives <= 0) setIsGameOver(true);
-  }, [lives]);
+    if (time <= 0) setIsGameOver(true);
+  }, [time]);
 
   useEffect(() => {
     if (isGameOver && token) {
-      uploadHighScore(token, { score: score, gamemode: "standard" });
+      uploadHighScore(token, { score: score, gamemode: "craze" });
     }
+    if (isGameOver) clearInterval(gameTimer.current);
   }, [isGameOver]);
 
   /* ------------------------------ MOLE HANDLING ------------------------------ */
@@ -181,7 +185,6 @@ export default function StandardGame() {
       backgroundAlpha: 0,
     },
   };
-
   const hole_coords = [
     { x: 300, y: 200 },
     { x: 600, y: 200 },
@@ -189,7 +192,6 @@ export default function StandardGame() {
     { x: 400, y: 400 },
     { x: 700, y: 400 },
   ];
-
   const hole_masks = useRef({
     0: drawCircleMask(hole_coords[0].x, hole_coords[0].y),
     1: drawCircleMask(hole_coords[1].x, hole_coords[1].y),
@@ -199,10 +201,11 @@ export default function StandardGame() {
   });
 
   /* ------------------------------ UPGRADE FUNCTIONALITY ------------------------------ */
+  /* -------------------- THIS IS CURRENTLY DEACTIVATED IN CRAZE MODE -------------------*/
   /* ------------------------------ --------------------- ------------------------------ */
 
   /*
-   * increases difficulty over time and triggers upgrade selection
+   * increases difficulty over time
    */
   useEffect(() => {
     //count moles hit
@@ -214,184 +217,186 @@ export default function StandardGame() {
       mole_count[4] +
       1;
 
-    //increase difficulty every 10 moles, open modal to offer an upgrade
-    if (!(molecounter % 10)) haste.current *= 1.05;
-    if (!(molecounter % 20)) {
-      const options = getUpgradeOptions();
-      if (!options) return;
-      gameObserver.current.off("evaded", subtractLife);
+    //increase difficulty every 10 moles, DON'T open modal to offer an upgrade
+    if (!(molecounter % 10)) {
+      haste.current *= 1.04;
       setLevel((prev) => prev + 1);
-      gameObserver.current.emit("reset_incoming");
-      setOptions(options);
-      app.stop();
-      setTimeout(() => {
-        window.my_modal_2.showModal();
-      }, 1500);
     }
+    // if (!(molecounter % 20)) {
+    //   const options = getUpgradeOptions();
+    //   if (!options) return;
+    //   gameObserver.current.off('evaded', subtractTime);
+    //   gameObserver.current.emit('reset_incoming');
+    //   setOptions(options);
+    //   app.stop();
+    //   setTimeout(() => {
+    //     window.my_modal_2.showModal();
+    //   }, 1500);
+    // }
   }, [mole_count]);
 
-  function getUpgradeOptions() {
-    //no hammer upgade chosen? offer hammers first
-    if (availableHammerUpgrades.length > 1) {
-      const [a, b] = getRandomIndices(availableHammerUpgrades);
-      const optionA = availableHammerUpgrades[a];
-      const optionB = availableHammerUpgrades[b];
-      //allow only one hammer upgrade: empty array upon offering the choice
-      setAvailableHammerUpgrades([]);
-      return [optionA, optionB];
-    }
-    //if less than 2 hammer upgrades are left, offer deployable object instead
-    const [a, b] = getRandomIndices(availableDeployableUpgrades);
-    const optionA = availableDeployableUpgrades[a];
-    const optionB = availableDeployableUpgrades[b];
-    //if no upgrades are left, return empty upgrades
-    if (!optionA && !optionB) return false;
+  // function getUpgradeOptions() {
+  //   //no hammer upgade chosen? offer hammers first
+  //   if (availableHammerUpgrades.length > 1) {
+  //     const [a, b] = getRandomIndices(availableHammerUpgrades);
+  //     const optionA = availableHammerUpgrades[a];
+  //     const optionB = availableHammerUpgrades[b];
+  //     //allow only one hammer upgrade: empty array upon offering the choice
+  //     setAvailableHammerUpgrades([]);
+  //     return [optionA, optionB];
+  //   }
+  //   //if less than 2 hammer upgrades are left, offer deployable object instead
+  //   const [a, b] = getRandomIndices(availableDeployableUpgrades);
+  //   const optionA = availableDeployableUpgrades[a];
+  //   const optionB = availableDeployableUpgrades[b];
+  //   //if no upgrades are left, return empty upgrades
+  //   if (!optionA && !optionB) return false;
 
-    return [optionA, optionB];
-  }
-
-  //runs cycleRightClickDeploy upon user scrolling the mouse
-  function handleMousewheel(e) {
-    // e.preventDefault();
-    cycleRightClickDeploy(e.deltaY);
-  }
+  //   return [optionA, optionB];
+  // }
 
   /*
    * handleRightclick: places the currently selected deployable upgrade on the nearest mole hole
    */
-  function handleRightclick(x, y, id) {
-    //if no deployable upgrade has been chosen so far or the cooldown is running, or one is already there, stop here
-    if (!rightClickDeploy || deployableCooldown || pluggedHoles[id]) return;
+  // function handleRightclick(x, y, id) {
+  //   //if no deployable upgrade has been chosen so far or the cooldown is running, or one is already there, stop here
+  //   if (!rightClickDeploy || deployableCooldown || pluggedHoles[id]) return;
 
-    //select the right hole to put the deployable on
-    const container = app.stage.children[0].children[id];
+  //   //select the right hole to put the deployable on
+  //   const container = app.stage.children[0].children[id];
 
-    const deploy = PIXISprite.from(rightClickDeploy.asset);
-    deploy.anchor.set(0.5);
-    deploy.x = x;
-    deploy.y = y;
-    deploy.name = rightClickDeploy.name;
-    deploy.id = id;
+  //   const deploy = PIXISprite.from(rightClickDeploy.asset);
+  //   deploy.anchor.set(0.5);
+  //   deploy.x = x;
+  //   deploy.y = y;
+  //   deploy.name = rightClickDeploy.name;
+  //   deploy.id = id;
 
-    //find out on which layer the deployable needs to be rendered
-    switch (rightClickDeploy.name) {
-      case "bomb":
-        deploy.zIndex = 1;
-        gameObserver.current.once("boom", function (e) {
-          // setPluggedHoles({ ...pluggedHoles, [e.source]: null });
-          // deploy.destroy();
-          container.removeChild(deploy);
-        });
-        setTimeout(() => {
-          gameObserver.current.emit("boom", { source: id });
-        }, BOMB_TIMER);
-        break;
-      case "cover":
-        deploy.zIndex = 3;
-        break;
-      case "trap":
-        deploy.zIndex = 0;
-        deploy.y -= 10;
-        //add foreground
-        const foreground = createTrapChild(x, y);
-        container.addChild(foreground);
-        deploy.dependantChild = foreground;
-        break;
-      //the drone gets a bit more complicated...
-      case "drone":
-        deploy.zIndex = 3;
-        deployDrone(deploy);
-        return;
-    }
+  //   //find out on which layer the deployable needs to be rendered
+  //   switch (rightClickDeploy.name) {
+  //     case "bomb":
+  //       deploy.zIndex = 1;
+  //       gameObserver.current.once("boom", function (e) {
+  //         // setPluggedHoles({ ...pluggedHoles, [e.source]: null });
+  //         // deploy.destroy();
+  //         container.removeChild(deploy);
+  //       });
+  //       setTimeout(() => {
+  //         gameObserver.current.emit("boom", { source: id });
+  //       }, BOMB_TIMER);
+  //       break;
+  //     case "cover":
+  //       deploy.zIndex = 3;
+  //       break;
+  //     case "trap":
+  //       deploy.zIndex = 0;
+  //       deploy.y -= 10;
+  //       //add foreground
+  //       const foreground = createTrapChild(x, y);
+  //       container.addChild(foreground);
+  //       deploy.dependantChild = foreground;
+  //       break;
+  //     //the drone gets a bit more complicated...
+  //     case "drone":
+  //       deploy.zIndex = 3;
+  //       deployDrone(deploy);
+  //       return;
+  //   }
 
-    //plug the deployable into the hole and trigger the cooldown
-    triggerDeployCooldown();
-    setPluggedHoles({ ...pluggedHoles, [id]: deploy });
-    container.addChild(deploy);
-  }
+  //   //plug the deployable into the hole and trigger the cooldown
+  //   triggerDeployCooldown();
+  //   setPluggedHoles({ ...pluggedHoles, [id]: deploy });
+  //   container.addChild(deploy);
+  // }
 
-  function deployDrone(drone) {
-    triggerDeployCooldown();
-  }
+  // function deployDrone(drone) {
+  //   triggerDeployCooldown();
+  // }
 
-  function createTrapChild(x, y) {
-    const trap_fore = PIXISprite.from(trap_foreground);
-    trap_fore.anchor.set(0.5);
-    trap_fore.x = x;
-    trap_fore.y = y - 10;
-    trap_fore.zIndex = 3;
-    return trap_fore;
-  }
+  // function createTrapChild(x, y) {
+  //   const trap_fore = PIXISprite.from(trap_foreground);
+  //   trap_fore.anchor.set(0.5);
+  //   trap_fore.x = x;
+  //   trap_fore.y = y - 10;
+  //   trap_fore.zIndex = 3;
+  //   return trap_fore;
+  // }
+
+  //runs cycleRightClickDeploy upon user scrolling the mouse
+  // function handleMousewheel(e) {
+  //   // e.preventDefault();
+  //   cycleRightClickDeploy(e.deltaY);
+  // }
 
   /*
    * cycleRightClickDeploy: sets the current deployable object to the next one in the chosenUpgrades Array, excluding hammer upgrades
    */
-  function cycleRightClickDeploy(deltaY) {
-    const scrollDirection = deltaY < 0 ? -1 : 1;
-    //exclude hammer upgrades
-    const upgrades = chosenUpgrades.filter(
-      (upgrade) =>
-        upgrade.name !== "spike_hammer" && upgrade.name !== "rocket_hammer"
-    );
-    //if there's just one upgrade, pick that
-    if (upgrades.length == 1) {
-      setRightClickDeploy(upgrades[0]);
-      return;
-    }
-    //otherwise, look for others to scroll to
-    const currentIndex = upgrades.findIndex(
-      (upgrade) => upgrade.name === rightClickDeploy.name
-    );
-    if (currentIndex !== -1) {
-      const nextIndex =
-        (currentIndex + scrollDirection + upgrades.length) % upgrades.length;
-      const nextUpgrade = upgrades[nextIndex];
-      setRightClickDeploy(nextUpgrade);
-    }
-  }
+  // function cycleRightClickDeploy(deltaY) {
+  //   const scrollDirection = deltaY < 0 ? -1 : 1;
+  //   //exclude hammer upgrades
+  //   const upgrades = chosenUpgrades.filter(
+  //     (upgrade) =>
+  //       upgrade.name !== "spike_hammer" && upgrade.name !== "rocket_hammer"
+  //   );
+  //   //if there's just one upgrade, pick that
+  //   if (upgrades.length == 1) {
+  //     setRightClickDeploy(upgrades[0]);
+  //     return;
+  //   }
+  //   //otherwise, look for others to scroll to
+  //   const currentIndex = upgrades.findIndex(
+  //     (upgrade) => upgrade.name === rightClickDeploy.name
+  //   );
+  //   if (currentIndex !== -1) {
+  //     const nextIndex =
+  //       (currentIndex + scrollDirection + upgrades.length) % upgrades.length;
+  //     const nextUpgrade = upgrades[nextIndex];
+  //     setRightClickDeploy(nextUpgrade);
+  //   }
+  // }
 
   /*
    * handleUpgradeSelection: The callback being executed by the upgrade choice modal
    * params: userChoice, the Upgrade Object the user has clicked
    * return: returns an array of 2 upgrade Objects
    */
-  function handleUpgradeSelection(userChoice) {
-    //if no upgrades are left, we get an empty asset, don't to anything
-    if (userChoice.asset == null) return;
+  // function handleUpgradeSelection(userChoice) {
+  //   //if no upgrades are left, we get an empty asset, don't to anything
+  //   if (userChoice.asset == null) return;
 
-    setChosenUpgrades((prev) => [...prev, userChoice]);
-    if (availableDeployableUpgrades.includes(userChoice)) {
-      const index = availableDeployableUpgrades.indexOf(userChoice);
-      setAvailableDeployableUpgrades(
-        availableDeployableUpgrades.toSpliced(index, 1)
-      );
-    }
-  }
+  //   setChosenUpgrades((prev) => [...prev, userChoice]);
+  //   if (availableDeployableUpgrades.includes(userChoice)) {
+  //     const index = availableDeployableUpgrades.indexOf(userChoice);
+  //     setAvailableDeployableUpgrades(
+  //       availableDeployableUpgrades.toSpliced(index, 1)
+  //     );
+  //   }
+  // }
 
   //if a new upgrade is chosen, cycle to it
-  useEffect(() => {
-    cycleRightClickDeploy(1);
-  }, [chosenUpgrades]);
+  // useEffect(() => {
+  //   cycleRightClickDeploy(1);
+  // }, [chosenUpgrades]);
 
   /* ------------------------------ HELPER FUNCTIONS ------------------------------ */
   /* ------------------------------ ---------------- ------------------------------ */
 
   //------------------- Animate the upgrade icons
-  const [cooldownProgress, setCooldownProgress] = useState(0);
+  //  const [cooldownProgress, setCooldownProgress] = useState(0);
 
-  useEffect(() => {
-    if (deployableCooldown) {
-      setCooldownProgress(100);
+  //  useEffect(() => {
+  //    if (deployableCooldown) {
+  //      setCooldownProgress(100);
 
-      const intervalId = setInterval(() => {
-        setCooldownProgress((prevProgress) =>
-          prevProgress > 2 ? prevProgress - 1 : 0
-        );
-      }, DEPLOY_CD / 100);
+  //      const intervalId = setInterval(() => {
+  //        setCooldownProgress((prevProgress) =>
+  //          prevProgress > 2 ? prevProgress - 1 : 0
+  //        );
+  //      }, DEPLOY_CD / 100);
 
-      return () => clearInterval(intervalId);
-    }
-  }, [deployableCooldown]);
+  //      return () => clearInterval(intervalId);
+  //    }
+  //  }, [deployableCooldown]);
   //---------------------------------------------
 
   /*
@@ -470,7 +475,7 @@ export default function StandardGame() {
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
-          <a href="/standardgame">
+          <a href="/sixtySecondsCraze">
             <button>Play again</button>
           </a>
           <Stage
@@ -485,15 +490,16 @@ export default function StandardGame() {
   }
 
   return (
-    <div className="game" onWheel={handleMousewheel}>
+    // <div className="game" onWheel={handleMousewheel}></div>
+    <div className="game">
       <div className="game-stats">
         <NavLink to="/modeselection">Back</NavLink>
         <div className="score-display">Score: {score}</div>
-        <div className="lives">Lives: {lives}</div>
+        <div className="lives">Time: {time}</div>
         <div className="level">Stage: {level}</div>
       </div>
       <div className="game-container">
-        <div className="chosen-upgrades">
+        {/* <div className="chosen-upgrades">
           {chosenUpgrades.map((upgrade) => (
             <img
               src={upgrade.asset}
@@ -512,7 +518,7 @@ export default function StandardGame() {
               }
             />
           ))}
-        </div>
+        </div> */}
         <Stage {...stageProps} onMount={setApp}>
           <Container sortableChildren={true}>
             <Sprite texture={Texture.WHITE} width={1} height={1} zIndex={99} />
@@ -541,7 +547,7 @@ export default function StandardGame() {
                 xInit={hole_coords[0].x}
                 yInit={hole_coords[0].y}
                 id={0}
-                handler={handleRightclick}
+                handler={(x, y, id) => {}}
               />
             </Container>
             {/* Hole Nr. 1 */}
@@ -567,7 +573,7 @@ export default function StandardGame() {
                 xInit={hole_coords[1].x}
                 yInit={hole_coords[1].y}
                 id={1}
-                handler={handleRightclick}
+                handler={(x, y, id) => {}}
               />
             </Container>
             {/* Hole Nr. 2 */}
@@ -593,7 +599,7 @@ export default function StandardGame() {
                 xInit={hole_coords[2].x}
                 yInit={hole_coords[2].y}
                 id={2}
-                handler={handleRightclick}
+                handler={(x, y, id) => {}}
               />
             </Container>
             {/* Hole Nr. 3 */}
@@ -619,7 +625,7 @@ export default function StandardGame() {
                 xInit={hole_coords[3].x}
                 yInit={hole_coords[3].y}
                 id={3}
-                handler={handleRightclick}
+                handler={(x, y, id) => {}}
               />
             </Container>
             {/* Hole Nr. 4 */}
@@ -645,20 +651,20 @@ export default function StandardGame() {
                 xInit={hole_coords[4].x}
                 yInit={hole_coords[4].y}
                 id={4}
-                handler={handleRightclick}
+                handler={(x, y, id) => {}}
               />
             </Container>
           </Container>
         </Stage>
       </div>
-      <UpgradeModal
+      {/* <UpgradeModal
         app={app}
         gameObserver={gameObserver}
-        subtractLife={subtractLife}
+        subtractLife={subtractScore}
         option1={option1}
         option2={option2}
         handleUpgradeSelection={handleUpgradeSelection}
-      />
+      /> */}
     </div>
   );
 }

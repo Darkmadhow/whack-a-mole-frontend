@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
-import molePeeker from "../img/mole_peeker.png";
-import molePeekerHit from "../img/mole_peeker_hit.png";
+import shroom from "../img/shroom.png";
 
-export default function MolePeeker({
+export default function MoleBunny({
   xInit,
   yInit,
   emitter,
@@ -13,21 +12,17 @@ export default function MolePeeker({
   swingTimerDuration,
   cooldownActive,
   setCooldownActive,
-  plugged,
-  unplugger,
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
-  const [moleImage, setMoleImage] = useState(molePeeker);
+  const [moleImage, setMoleImage] = useState(shroom);
   const time = useRef(0);
   const my_id = useRef(id);
-  const my_value = useRef(300); //Standard Mole point value
-  const my_time_value = 8;
-  const my_craze_value = useRef(150);
-  const my_decay = 100; //Decay rate of point value
-  const jumpHeight = -75;
-  const [stay_alive, stay_down] = [2000 / haste, 2000 / haste]; //Peeker moles stay up for 2s base and down for 2s
-  const TRAP_TIMER = 3000; //the amount of time a mole will be stuck in a trap
+  const my_value = useRef(-200); //Standard Mole point value
+  const my_time_value = 2;
+  const my_decay = 0; //Decay rate of point value
+  const jumpHeight = -125;
+  const [stay_alive, stay_down] = [2000 / haste, 1000 / haste]; //bunnies stay up for 3s base and down for 1s
 
   const aliveTimer = useRef(null);
   const downTimer = useRef(null);
@@ -74,7 +69,7 @@ export default function MolePeeker({
   */
   const getRandomTimeout = () => {
     const min = 1000 / haste;
-    const max = 7000 / haste;
+    const max = 5000 / haste;
     return Math.floor(Math.random() * max - min + 1) + min;
   };
 
@@ -83,7 +78,6 @@ export default function MolePeeker({
   */
   useEffect(() => {
     emitter.on("reset_incoming", stopAllTimeouts);
-    emitter.on("boom", killMoleForcefully);
 
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
@@ -91,13 +85,12 @@ export default function MolePeeker({
     }, getRandomTimeout());
     return () => {
       emitter.off("reset_incoming", stopAllTimeouts);
-      emitter.off("boom", killMoleForcefully);
 
       clearTimeout(aliveTimer.current);
       clearTimeout(downTimer.current);
       clearTimeout(stateTimer.current);
-      clearTimeout(deadTimer.current);
       clearTimeout(spawnTimer.current);
+      clearTimeout(deadTimer.current);
     };
   }, []);
 
@@ -107,37 +100,28 @@ export default function MolePeeker({
    */
   useEffect(() => {
     if (moleState === moleStates.alive) {
-      //if there's a trap on the hole, stay up for longer
-      if (plugged[id] && plugged[id].name === "trap") {
-        aliveTimer.current = setTimeout(() => {
-          removePlug();
-          //when alive timer's up, go to hiding state and reduce point value
-          setStateTimer(moleStates.down);
-          setMoleState(moleStates.dying);
-          my_value.current -= my_decay;
-        }, stay_alive + TRAP_TIMER);
-      } else {
-        aliveTimer.current = setTimeout(() => {
-          setStateTimer(moleStates.down);
-          setMoleState(moleStates.dying);
-          my_value.current -= my_decay;
-        }, stay_alive);
-      }
+      aliveTimer.current = setTimeout(() => {
+        //when alive timer's up, go to hiding state and reduce point value
+        setStateTimer(moleStates.down);
+        setMoleState(moleStates.dying);
+      }, stay_alive);
     }
-    //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", {
-        value: my_value.current,
-        time_value: my_time_value,
-        craze_value: my_craze_value.current,
-      });
-      time.current = 0;
-      downTimer.current = setTimeout(() => {
-        setStateTimer(moleStates.alive);
-        setMoleState(moleStates.spawning);
-      }, stay_down);
+      despawnShroom();
     }
   }, [moleState]);
+
+  /*
+   * despawnShroom: if the shroom retreats in its hole unharmed, despawn
+   */
+  function despawnShroom() {
+    clearTimeout(aliveTimer.current);
+    clearTimeout(downTimer.current);
+    clearTimeout(stateTimer.current);
+    clearTimeout(deadTimer.current);
+    clearTimeout(spawnTimer.current);
+    emitter.emit("dead", { id: my_id.current, value: 0, time_value: 0 });
+  }
 
   /*
   setStateTimer sets a timeout after which the mole changes state
@@ -159,33 +143,22 @@ export default function MolePeeker({
     clearTimeout(spawnTimer.current);
   }
 
-  function killMoleForcefully() {
-    killMole(true);
-  }
-  /*
-   * killMole initiates the mole despawning
-   * params: force, boolean for killing the mole even if swing timer is on cooldown
-   */
-  function killMole(force) {
+  function killShroom() {
     // Check if the cooldown is active
-    if (cooldownActive && !force) return;
+    if (cooldownActive) return;
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
     setStateTimer(moleStates.dead);
-    setMoleImage(molePeekerHit);
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
       emitter.emit("dead", {
         id: my_id.current,
         value: my_value.current,
-        time_value: my_time_value,
+        time_value: my_time_value * -1,
       });
     }, 505 / haste);
-
-    //clear deployed upgrades
-    removePlug();
 
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
@@ -193,20 +166,11 @@ export default function MolePeeker({
     )
       ? 0.5
       : 1;
-    // Activate the swing timer cooldown
+    // Activate the swing timer cooldown, shrooms trigger a 3 times higher CD
     setCooldownActive(true);
     setTimeout(() => {
       setCooldownActive(false);
-    }, swingTimerDuration * rocket_mult);
-  }
-
-  //removes the deployed upgrade from the hole
-  function removePlug() {
-    plugged[id]?.dependantChild?.destroy();
-    plugged[id]?.destroy();
-    unplugger((prev) => {
-      return { ...prev, [id]: null };
-    });
+    }, swingTimerDuration * 3 * rocket_mult);
   }
 
   return (
@@ -222,7 +186,7 @@ export default function MolePeeker({
           ? "none"
           : "static"
       }
-      pointerdown={() => killMole(false)}
+      pointerdown={killShroom}
     ></Sprite>
   );
 }
