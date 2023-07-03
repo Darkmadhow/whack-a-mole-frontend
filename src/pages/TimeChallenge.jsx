@@ -224,10 +224,10 @@ export default function TimeChallenge() {
     //increase difficulty every 10 moles, open modal to offer an upgrade
     if (!(molecounter % 10)) haste.current *= 1.05;
     if (!(molecounter % 20)) {
+      setLevel((prev) => prev + 1);
       const options = getUpgradeOptions();
       if (!options) return;
       gameObserver.current.off("evaded", subtractTime);
-      setLevel((prev) => prev + 1);
       gameObserver.current.emit("reset_incoming");
       setOptions(options);
       app.stop();
