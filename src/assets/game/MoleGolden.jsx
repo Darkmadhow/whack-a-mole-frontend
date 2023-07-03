@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useTick } from "@pixi/react";
-import moleGolden from "../img/mole_golden.png";
-import moleGoldenHit from "../img/mole_golden_hit.png";
+import React, { useEffect, useRef, useState } from 'react';
+import { Sprite, useTick } from '@pixi/react';
+import moleGolden from '../img/mole_golden.png';
+import moleGoldenHit from '../img/mole_golden_hit.png';
+import { sound } from '@pixi/sound';
 
 export default function MoleGolden({
   xInit,
@@ -28,7 +29,7 @@ export default function MoleGolden({
   const jumpHeight = -125;
   const [stay_alive, stay_down] = [1000 / haste, 1000 / haste]; //Golden moles stay up for 1s base and down for 1s
   const spikedHammer = activeUpgrades.some(
-    (upgrade) => upgrade.name === "spike_hammer"
+    (upgrade) => upgrade.name === 'spike_hammer'
   ); //golden mole needs to know wether spiked Hammer is active or not
   const TRAP_TIMER = 3000; //the amount of time a mole will be stuck in a trap
 
@@ -39,11 +40,11 @@ export default function MoleGolden({
   const deadTimer = useRef(null);
 
   const moleStates = {
-    dead: "dead",
-    alive: "alive",
-    spawning: "spawning",
-    dying: "dying",
-    down: "down",
+    dead: 'dead',
+    alive: 'alive',
+    spawning: 'spawning',
+    dying: 'dying',
+    down: 'down',
   };
 
   const [moleState, setMoleState] = useState(moleStates.dead);
@@ -85,16 +86,16 @@ export default function MoleGolden({
     Upon Entering Stage, set a random timer upon which the mole wakes up and subscribe to game events
   */
   useEffect(() => {
-    emitter.on("reset_incoming", stopAllTimeouts);
-    emitter.on("boom", killMoleForcefully);
+    emitter.on('reset_incoming', stopAllTimeouts);
+    emitter.on('boom', killMoleForcefully);
 
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
     }, getRandomTimeout());
     return () => {
-      emitter.off("reset_incoming", stopAllTimeouts);
-      emitter.off("boom", killMoleForcefully);
+      emitter.off('reset_incoming', stopAllTimeouts);
+      emitter.off('boom', killMoleForcefully);
 
       clearTimeout(aliveTimer.current);
       clearTimeout(downTimer.current);
@@ -111,7 +112,8 @@ export default function MoleGolden({
   useEffect(() => {
     if (moleState === moleStates.alive) {
       //if there's a trap on the hole, stay up for longer
-      if (plugged[id] && plugged[id].name === "trap") {
+      if (plugged[id] && plugged[id].name === 'trap') {
+        sound.play('trap');
         aliveTimer.current = setTimeout(() => {
           removePlug();
           //when alive timer's up, go to hiding state and reduce point value
@@ -129,7 +131,7 @@ export default function MoleGolden({
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", {
+      emitter.emit('evaded', {
         value: my_value.current,
         time_value: my_time_value,
         craze_value: my_craze_value.current,
@@ -173,6 +175,8 @@ export default function MoleGolden({
     // Check if the cooldown is active
     if (cooldownActive) return;
 
+    sound.play('golden');
+
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
     setStateTimer(moleStates.dead);
@@ -181,7 +185,7 @@ export default function MoleGolden({
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
       // console.log(my_id.current, " died");
-      emitter.emit("dead", {
+      emitter.emit('dead', {
         id: my_id.current,
         value: spikedHammer ? my_value.current * 1.5 : my_value.current,
         time_value: my_time_value - 4, //only get 3 seconds for hitting golden mole, instead of 7
@@ -193,7 +197,7 @@ export default function MoleGolden({
 
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
-      (upgrade) => upgrade.name === "rocket_hammer"
+      (upgrade) => upgrade.name === 'rocket_hammer'
     )
       ? 0.5
       : 1;
@@ -223,10 +227,9 @@ export default function MoleGolden({
       zIndex={1}
       eventMode={
         moleState === moleStates.dying || moleState === moleStates.dead
-          ? "none"
-          : "static"
+          ? 'none'
+          : 'static'
       }
-      pointerdown={() => killMole(false)}
-    ></Sprite>
+      pointerdown={() => killMole(false)}></Sprite>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Sprite, useTick } from '@pixi/react';
 import bunny from '../img/bunny.png';
 import bunnyHit from '../img/bunny_hit.png';
+import { sound } from '@pixi/sound';
 
 export default function MoleBunny({
   xInit,
@@ -148,6 +149,8 @@ export default function MoleBunny({
   function killBunny() {
     // Check if the cooldown is active
     if (cooldownActive) return;
+
+    sound.play('bunny');
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);

@@ -21,7 +21,6 @@ export default function MoleContainer({
   setCooldownActive,
   plugged,
   unplugger,
-  playSound,
 }) {
   /*
    * replaceMole: replaces the string of the recently died mole with a new one
@@ -176,7 +175,6 @@ export default function MoleContainer({
           setCooldownActive={setCooldownActive}
           plugged={plugged}
           unplugger={unplugger}
-          playSound={playSound}
         />
       );
   }

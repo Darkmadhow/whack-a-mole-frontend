@@ -25,6 +25,7 @@ import cover from '../assets/img/cover.png';
 import trap from '../assets/img/trap.png';
 import trap_foreground from '../assets/img/trap_foreground.png';
 import '../styles/game.css';
+import { globalMoleSounds } from '../utils/sounds';
 
 export default function StandardGame() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
@@ -84,11 +85,7 @@ export default function StandardGame() {
     gameObserver.current.on('evaded', subtractLife);
     gameObserver.current.on('reset', replaceAllMoles);
 
-    sound.add('hitMole', {
-      autoplay: false,
-      url: 'src/assets/sounds/cartoon_squeeze_object_into_tight_space.mp3',
-      loaded: () => console.log('sound loaded'),
-    });
+    sound.add(globalMoleSounds);
 
     //prevent right-click to open context menu
     document.addEventListener('contextmenu', handleContextMenu);
@@ -97,6 +94,8 @@ export default function StandardGame() {
       gameObserver.current.off('dead', updateScore);
       gameObserver.current.off('evaded', subtractLife);
       gameObserver.current.off('reset', replaceAllMoles);
+
+      sound.removeAll();
 
       document.removeEventListener('contextmenu', handleContextMenu);
     };
@@ -227,6 +226,7 @@ export default function StandardGame() {
       setLevel((prev) => prev + 1);
       const options = getUpgradeOptions();
       if (!options) return;
+      sound.play('powerup');
       gameObserver.current.off('evaded', subtractLife);
       gameObserver.current.emit('reset_incoming');
       setOptions(options);
@@ -291,6 +291,7 @@ export default function StandardGame() {
         });
         setTimeout(() => {
           gameObserver.current.emit('boom', { source: id });
+          sound.play('bomb');
         }, BOMB_TIMER);
         break;
       case 'cover':
@@ -315,11 +316,6 @@ export default function StandardGame() {
     triggerDeployCooldown();
     setPluggedHoles({ ...pluggedHoles, [id]: deploy });
     container.addChild(deploy);
-  }
-
-  function playSound(name) {
-    sound.play(name);
-    console.log('play sound', name);
   }
 
   function deployDrone(drone) {
@@ -548,7 +544,6 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
-                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[0].x}
@@ -575,7 +570,6 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
-                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[1].x}
@@ -602,7 +596,6 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
-                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[2].x}
@@ -629,7 +622,6 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
-                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[3].x}
@@ -656,7 +648,6 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
-                playSound={playSound}
               />
               <MoleHole
                 xInit={hole_coords[4].x}
