@@ -4,31 +4,31 @@ import React, {
   useEffect,
   useContext,
   useCallback,
-} from 'react';
-import { NavLink } from 'react-router-dom';
-import { Stage, Sprite, Container } from '@pixi/react';
-import { Texture, Graphics } from 'pixi.js';
-import { EventEmitter } from '@pixi/utils';
-import { UserContext } from '../userContext';
-import { uploadHighScore } from '../utils/scores';
-import UpgradeModal from '../components/UpgradeModal';
-import MoleHole from '../assets/game/MoleHole';
-import MoleContainer from '../assets/game/MoleContainer';
-import Mallet from '../assets/game/Mallet';
-import Reticle from '../assets/game/Reticle';
-import rocketHammer from '../assets/img/mallet_rocket.png';
-import spikeHammer from '../assets/img/mallet_spikey.png';
-import droneHammer from '../assets/img/drone.png';
-import bomb from '../assets/img/bomb.png';
-import cover from '../assets/img/cover.png';
-import trap from '../assets/img/trap.png';
-import '../styles/game.css';
+} from "react";
+import { NavLink } from "react-router-dom";
+import { Stage, Sprite, Container } from "@pixi/react";
+import { Texture, Graphics } from "pixi.js";
+import { EventEmitter } from "@pixi/utils";
+import { UserContext } from "../userContext";
+import { uploadHighScore } from "../utils/scores";
+import UpgradeModal from "../components/UpgradeModal";
+import MoleHole from "../assets/game/MoleHole";
+import MoleContainer from "../assets/game/MoleContainer";
+import Mallet from "../assets/game/Mallet";
+import Reticle from "../assets/game/Reticle";
+import rocketHammer from "../assets/img/mallet_rocket.png";
+import spikeHammer from "../assets/img/mallet_spikey.png";
+import droneHammer from "../assets/img/drone.png";
+import bomb from "../assets/img/bomb.png";
+import cover from "../assets/img/cover.png";
+import trap from "../assets/img/trap.png";
+import "../styles/game.css";
 
 export default function SixtySecondsCraze() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
   /* ------------------------- -------------------- ------------------------- */
-  //the stage component including all our sprites
-  const [stage, setStage] = useState();
+  //the app component including all our sprites
+  const [app, setApp] = useState();
   //the event emitter that will handle all game interactions
   const gameObserver = useRef(new EventEmitter());
   //initial score and lives
@@ -39,17 +39,16 @@ export default function SixtySecondsCraze() {
   const haste = useRef(1.5);
   //swing timer values
   const [cooldownActive, setCooldownActive] = useState(false); //the swing timer check
-  const swingTimerDuration = 300; //the swing timer cooldown in ms
+  const SWING_TIMER_DURATION = 300; //the swing timer cooldown in ms
 
   const gameTimer = useRef(null);
-  //isGameOver
   const [isGameOver, setIsGameOver] = useState(false);
 
   //the upgrades chosen by the user stored as string array and available upgrades
   const [chosenUpgrades, setChosenUpgrades] = useState([]);
   const [availableHammerUpgrades, setAvailableHammerUpgrades] = useState([
-    { name: 'rocket_hammer', asset: rocketHammer },
-    { name: 'spike_hammer', asset: spikeHammer },
+    { name: "rocket_hammer", asset: rocketHammer },
+    { name: "spike_hammer", asset: spikeHammer },
   ]);
   const [[option1, option2], setOptions] = useState([
     { name: null, asset: null },
@@ -57,33 +56,44 @@ export default function SixtySecondsCraze() {
   ]);
   const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
     useState([
-      { name: 'bomb', asset: bomb },
-      { name: 'cover', asset: cover },
-      { name: 'trap', asset: trap },
-      { name: 'drone', asset: droneHammer },
+      { name: "bomb", asset: bomb },
+      // { name: 'cover', asset: cover },
+      { name: "trap", asset: trap },
+      // { name: 'drone', asset: droneHammer },
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
   const [rightClickDeploy, setRightClickDeploy] = useState(null);
+  const [pluggedHoles, setPluggedHoles] = useState({
+    0: null,
+    1: null,
+    2: null,
+    3: null,
+    4: null,
+  });
+  const [deployableCooldown, setDeployableCooldown] = useState(false);
+
+  const { token } = useContext(UserContext);
 
   //subscribe to mole events
-  const { token } = useContext(UserContext);
   useEffect(() => {
-    gameObserver.current.on('dead', updateScore);
-    gameObserver.current.on('evaded', subtractScore);
-    gameObserver.current.on('reset', replaceAllMoles);
+    gameObserver.current.on("dead", updateScore);
+    gameObserver.current.on("evaded", subtractScore);
+    gameObserver.current.on("reset", replaceAllMoles);
+
+    //prevent right-click to open context menu
+    document.addEventListener("contextmenu", handleContextMenu);
 
     gameTimer.current = setInterval(() => {
       setTime((prev) => prev - 1);
     }, 1000);
 
-    // console.log("mount: start gameTimer:", gameTimer.current);
     return () => {
-      gameObserver.current.off('dead', updateScore);
-      gameObserver.current.off('evaded', subtractScore);
-      gameObserver.current.off('reset', replaceAllMoles);
+      gameObserver.current.off("dead", updateScore);
+      gameObserver.current.off("evaded", subtractScore);
+      gameObserver.current.off("reset", replaceAllMoles);
 
       clearInterval(gameTimer.current);
-      // console.log("unmount: clear gameTimer", gameTimer.current);
+      document.removeEventListener("contextmenu", handleContextMenu);
     };
   }, []);
 
@@ -91,7 +101,6 @@ export default function SixtySecondsCraze() {
   /* ------------------------------ ----------------- ------------------------------ */
   function updateScore(e) {
     const score = e.value < 0 ? 0 : e.value;
-    // console.log("updateScore:", e, "Time added:", timeToAdd);
     setScore((prev) => prev + score);
   }
 
@@ -104,12 +113,10 @@ export default function SixtySecondsCraze() {
   }, [time]);
 
   useEffect(() => {
-    if (isGameOver) {
-      uploadHighScore(token, { score: score, gamemode: 'craze' });
-      console.log('uploadHighScore:', score);
-      clearInterval(gameTimer.current);
-      console.log('game over: clear gameTimer', gameTimer.current);
+    if (isGameOver && token) {
+      uploadHighScore(token, { score: score, gamemode: "craze" });
     }
+    if (isGameOver) clearInterval(gameTimer.current);
   }, [isGameOver]);
 
   /* ------------------------------ MOLE HANDLING ------------------------------ */
@@ -125,38 +132,38 @@ export default function SixtySecondsCraze() {
 
   //current mole type in each hole, as a string array
   const [moles, setMoles] = useState([
-    { moleType: 'standard', key: 1000 },
-    { moleType: 'standard', key: 2000 },
-    { moleType: 'standard', key: 3000 },
-    { moleType: 'standard', key: 4000 },
-    { moleType: 'standard', key: 5000 },
+    { moleType: "standard", key: 1000 },
+    { moleType: "standard", key: 2000 },
+    { moleType: "standard", key: 3000 },
+    { moleType: "standard", key: 4000 },
+    { moleType: "standard", key: 5000 },
   ]);
 
   function replaceAllMoles() {
     const molesTemp = moles.map((mole) => {
       const rnd = Math.floor(Math.random() * 13);
-      let newMole = 'standard';
+      let newMole = "standard";
       switch (rnd) {
         case 0:
         case 1:
-          newMole = 'peeker';
+          newMole = "peeker";
           break;
         case 2:
         case 3:
-          newMole = 'hardhat';
+          newMole = "hardhat";
           break;
         case 4:
-          newMole = 'golden';
+          newMole = "golden";
           break;
         case 5:
         case 6:
-          newMole = 'bunny';
+          newMole = "bunny";
           break;
         case 7:
-          newMole = 'shroom';
+          newMole = "shroom";
           break;
         default:
-          newMole = 'standard';
+          newMole = "standard";
           break;
       }
 
@@ -194,6 +201,7 @@ export default function SixtySecondsCraze() {
   });
 
   /* ------------------------------ UPGRADE FUNCTIONALITY ------------------------------ */
+  /* -------------------- THIS IS CURRENTLY DEACTIVATED IN CRAZE MODE -------------------*/
   /* ------------------------------ --------------------- ------------------------------ */
 
   /*
@@ -209,83 +217,187 @@ export default function SixtySecondsCraze() {
       mole_count[4] +
       1;
 
-    //increase difficulty every 10 moles, open modal to offer an upgrade
-    if (!(molecounter % 10)) haste.current *= 1.04;
-    if (!(molecounter % 20)) {
-      const options = getUpgradeOptions();
-      if (!options) return;
-      // gameObserver.current.off('evaded', subtractTime);
+    //increase difficulty every 10 moles, DON'T open modal to offer an upgrade
+    if (!(molecounter % 10)) {
+      haste.current *= 1.04;
       setLevel((prev) => prev + 1);
-      gameObserver.current.emit('reset_incoming');
-      setOptions(options);
-      stage.stop();
-      setTimeout(() => {
-        window.my_modal_2.showModal();
-      }, 1500);
     }
+    // if (!(molecounter % 20)) {
+    //   const options = getUpgradeOptions();
+    //   if (!options) return;
+    //   gameObserver.current.off('evaded', subtractTime);
+    //   gameObserver.current.emit('reset_incoming');
+    //   setOptions(options);
+    //   app.stop();
+    //   setTimeout(() => {
+    //     window.my_modal_2.showModal();
+    //   }, 1500);
+    // }
   }, [mole_count]);
 
-  function getUpgradeOptions() {
-    //no hammer upgade chosen? offer hammers first
-    if (availableHammerUpgrades.length > 1) {
-      const [a, b] = getRandomIndices(availableHammerUpgrades);
-      const optionA = availableHammerUpgrades[a];
-      const optionB = availableHammerUpgrades[b];
-      //allow only one hammer upgrade: empty array upon offering the choice
-      setAvailableHammerUpgrades([]);
-      return [optionA, optionB];
-    }
-    //if less than 2 hammer upgrades are left, offer deployable object instead
-    const [a, b] = getRandomIndices(availableDeployableUpgrades);
-    const optionA = availableDeployableUpgrades[a];
-    const optionB = availableDeployableUpgrades[b];
-    //if no upgrades are left, return empty upgrades
-    if (!optionA && !optionB) return false;
+  // function getUpgradeOptions() {
+  //   //no hammer upgade chosen? offer hammers first
+  //   if (availableHammerUpgrades.length > 1) {
+  //     const [a, b] = getRandomIndices(availableHammerUpgrades);
+  //     const optionA = availableHammerUpgrades[a];
+  //     const optionB = availableHammerUpgrades[b];
+  //     //allow only one hammer upgrade: empty array upon offering the choice
+  //     setAvailableHammerUpgrades([]);
+  //     return [optionA, optionB];
+  //   }
+  //   //if less than 2 hammer upgrades are left, offer deployable object instead
+  //   const [a, b] = getRandomIndices(availableDeployableUpgrades);
+  //   const optionA = availableDeployableUpgrades[a];
+  //   const optionB = availableDeployableUpgrades[b];
+  //   //if no upgrades are left, return empty upgrades
+  //   if (!optionA && !optionB) return false;
 
-    return [optionA, optionB];
-  }
+  //   return [optionA, optionB];
+  // }
+
+  /*
+   * handleRightclick: places the currently selected deployable upgrade on the nearest mole hole
+   */
+  // function handleRightclick(x, y, id) {
+  //   //if no deployable upgrade has been chosen so far or the cooldown is running, or one is already there, stop here
+  //   if (!rightClickDeploy || deployableCooldown || pluggedHoles[id]) return;
+
+  //   //select the right hole to put the deployable on
+  //   const container = app.stage.children[0].children[id];
+
+  //   const deploy = PIXISprite.from(rightClickDeploy.asset);
+  //   deploy.anchor.set(0.5);
+  //   deploy.x = x;
+  //   deploy.y = y;
+  //   deploy.name = rightClickDeploy.name;
+  //   deploy.id = id;
+
+  //   //find out on which layer the deployable needs to be rendered
+  //   switch (rightClickDeploy.name) {
+  //     case "bomb":
+  //       deploy.zIndex = 1;
+  //       gameObserver.current.once("boom", function (e) {
+  //         // setPluggedHoles({ ...pluggedHoles, [e.source]: null });
+  //         // deploy.destroy();
+  //         container.removeChild(deploy);
+  //       });
+  //       setTimeout(() => {
+  //         gameObserver.current.emit("boom", { source: id });
+  //       }, BOMB_TIMER);
+  //       break;
+  //     case "cover":
+  //       deploy.zIndex = 3;
+  //       break;
+  //     case "trap":
+  //       deploy.zIndex = 0;
+  //       deploy.y -= 10;
+  //       //add foreground
+  //       const foreground = createTrapChild(x, y);
+  //       container.addChild(foreground);
+  //       deploy.dependantChild = foreground;
+  //       break;
+  //     //the drone gets a bit more complicated...
+  //     case "drone":
+  //       deploy.zIndex = 3;
+  //       deployDrone(deploy);
+  //       return;
+  //   }
+
+  //   //plug the deployable into the hole and trigger the cooldown
+  //   triggerDeployCooldown();
+  //   setPluggedHoles({ ...pluggedHoles, [id]: deploy });
+  //   container.addChild(deploy);
+  // }
+
+  // function deployDrone(drone) {
+  //   triggerDeployCooldown();
+  // }
+
+  // function createTrapChild(x, y) {
+  //   const trap_fore = PIXISprite.from(trap_foreground);
+  //   trap_fore.anchor.set(0.5);
+  //   trap_fore.x = x;
+  //   trap_fore.y = y - 10;
+  //   trap_fore.zIndex = 3;
+  //   return trap_fore;
+  // }
+
+  //runs cycleRightClickDeploy upon user scrolling the mouse
+  // function handleMousewheel(e) {
+  //   // e.preventDefault();
+  //   cycleRightClickDeploy(e.deltaY);
+  // }
 
   /*
    * cycleRightClickDeploy: sets the current deployable object to the next one in the chosenUpgrades Array, excluding hammer upgrades
    */
-  function cycleRightClickDeploy() {
-    console.log('cycling');
-    const upgrades = chosenUpgrades.filter(
-      (upgrade) =>
-        upgrade.name !== 'spike_hammer' && upgrade.name !== 'rocket_hammer'
-    );
-    const currentIndex = upgrades.findIndex(
-      (upgrade) => upgrade.name === rightClickDeploy.name
-    );
-
-    if (currentIndex !== -1) {
-      const nextIndex = (currentIndex + 1) % upgrades.length;
-      const nextUpgrade = upgrades[nextIndex];
-      setRightClickDeploy(nextUpgrade);
-      console.log('Switched to: ', nextUpgrade);
-    }
-  }
+  // function cycleRightClickDeploy(deltaY) {
+  //   const scrollDirection = deltaY < 0 ? -1 : 1;
+  //   //exclude hammer upgrades
+  //   const upgrades = chosenUpgrades.filter(
+  //     (upgrade) =>
+  //       upgrade.name !== "spike_hammer" && upgrade.name !== "rocket_hammer"
+  //   );
+  //   //if there's just one upgrade, pick that
+  //   if (upgrades.length == 1) {
+  //     setRightClickDeploy(upgrades[0]);
+  //     return;
+  //   }
+  //   //otherwise, look for others to scroll to
+  //   const currentIndex = upgrades.findIndex(
+  //     (upgrade) => upgrade.name === rightClickDeploy.name
+  //   );
+  //   if (currentIndex !== -1) {
+  //     const nextIndex =
+  //       (currentIndex + scrollDirection + upgrades.length) % upgrades.length;
+  //     const nextUpgrade = upgrades[nextIndex];
+  //     setRightClickDeploy(nextUpgrade);
+  //   }
+  // }
 
   /*
    * handleUpgradeSelection: The callback being executed by the upgrade choice modal
    * params: userChoice, the Upgrade Object the user has clicked
    * return: returns an array of 2 upgrade Objects
    */
-  function handleUpgradeSelection(userChoice) {
-    //if no upgrades are left, we get an empty asset, don't to anything
-    if (userChoice.asset == null) return;
+  // function handleUpgradeSelection(userChoice) {
+  //   //if no upgrades are left, we get an empty asset, don't to anything
+  //   if (userChoice.asset == null) return;
 
-    setChosenUpgrades((prev) => [...prev, userChoice]);
-    if (availableDeployableUpgrades.includes(userChoice)) {
-      const index = availableDeployableUpgrades.indexOf(userChoice);
-      setAvailableDeployableUpgrades(
-        availableDeployableUpgrades.toSpliced(index, 1)
-      );
-    }
-  }
+  //   setChosenUpgrades((prev) => [...prev, userChoice]);
+  //   if (availableDeployableUpgrades.includes(userChoice)) {
+  //     const index = availableDeployableUpgrades.indexOf(userChoice);
+  //     setAvailableDeployableUpgrades(
+  //       availableDeployableUpgrades.toSpliced(index, 1)
+  //     );
+  //   }
+  // }
+
+  //if a new upgrade is chosen, cycle to it
+  // useEffect(() => {
+  //   cycleRightClickDeploy(1);
+  // }, [chosenUpgrades]);
 
   /* ------------------------------ HELPER FUNCTIONS ------------------------------ */
   /* ------------------------------ ---------------- ------------------------------ */
+
+  //------------------- Animate the upgrade icons
+  //  const [cooldownProgress, setCooldownProgress] = useState(0);
+
+  //  useEffect(() => {
+  //    if (deployableCooldown) {
+  //      setCooldownProgress(100);
+
+  //      const intervalId = setInterval(() => {
+  //        setCooldownProgress((prevProgress) =>
+  //          prevProgress > 2 ? prevProgress - 1 : 0
+  //        );
+  //      }, DEPLOY_CD / 100);
+
+  //      return () => clearInterval(intervalId);
+  //    }
+  //  }, [deployableCooldown]);
+  //---------------------------------------------
 
   /*
    * drawCircleMask: draws a circular Graphics object with red fill
@@ -336,6 +448,19 @@ export default function SixtySecondsCraze() {
     return [index1, index2];
   };
 
+  //prevents the Contextmenu from opening upon Rightclick
+  function handleContextMenu(e) {
+    e.preventDefault();
+  }
+
+  //triggers the cooldown on the deployable upgrades
+  function triggerDeployCooldown() {
+    setDeployableCooldown(true);
+    setTimeout(() => {
+      setDeployableCooldown(false);
+    }, DEPLOY_CD);
+  }
+
   /* ------------------------------ VISUAL OUTPUT ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
 
@@ -350,11 +475,14 @@ export default function SixtySecondsCraze() {
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
+          <a href="/sixtySecondsCraze">
+            <button>Play again</button>
+          </a>
           <Stage
             width={1}
             height={1}
             options={{ backgroundAlpha: 0 }}
-            onMount={setStage}
+            onMount={setApp}
           />
         </div>
       </div>
@@ -362,6 +490,7 @@ export default function SixtySecondsCraze() {
   }
 
   return (
+    // <div className="game" onWheel={handleMousewheel}></div>
     <div className="game">
       <div className="game-stats">
         <NavLink to="/modeselection">Back</NavLink>
@@ -369,126 +498,173 @@ export default function SixtySecondsCraze() {
         <div className="lives">Time: {time}</div>
         <div className="level">Stage: {level}</div>
       </div>
-      <Stage {...stageProps} onMount={setStage}>
-        <Container sortableChildren={true}>
-          <Sprite texture={Texture.WHITE} width={1} height={1} />
-          <Mallet chosenUpgrades={chosenUpgrades} />
-          <Reticle />
-          {/* Hole Nr. 0 */}
-          <Container sortableChildren={true} mask={hole_masks.current[0]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={0}
-              // moleType={moles[0].moleType}
-              xInit={hole_coords[0].x}
-              yInit={hole_coords[0].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[0].key}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
+      <div className="game-container">
+        {/* <div className="chosen-upgrades">
+          {chosenUpgrades.map((upgrade) => (
+            <img
+              src={upgrade.asset}
+              className={`${
+                upgrade.name === rightClickDeploy?.name ? "selected" : ""
+              } ${deployableCooldown ? "cooldown" : ""}`}
+              key={upgrade.name}
+              style={
+                upgrade.name === rightClickDeploy?.name
+                  ? {
+                      backgroundImage: `conic-gradient(#f00 0% ${
+                        100 - cooldownProgress
+                      }%, transparent ${100 - cooldownProgress}% 100%)`,
+                    }
+                  : {}
+              }
             />
-            <MoleHole xInit={hole_coords[0].x} yInit={hole_coords[0].y} />
+          ))}
+        </div> */}
+        <Stage {...stageProps} onMount={setApp}>
+          <Container sortableChildren={true}>
+            <Sprite texture={Texture.WHITE} width={1} height={1} zIndex={99} />
+            <Mallet chosenUpgrades={chosenUpgrades} />
+            <Reticle />
+            {/* Hole Nr. 0 */}
+            <Container sortableChildren={true} mask={hole_masks.current[0]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={0}
+                xInit={hole_coords[0].x}
+                yInit={hole_coords[0].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={SWING_TIMER_DURATION}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
+              />
+              <MoleHole
+                xInit={hole_coords[0].x}
+                yInit={hole_coords[0].y}
+                id={0}
+                handler={(x, y, id) => {}}
+              />
+            </Container>
+            {/* Hole Nr. 1 */}
+            <Container sortableChildren={true} mask={hole_masks.current[1]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={1}
+                xInit={hole_coords[1].x}
+                yInit={hole_coords[1].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={SWING_TIMER_DURATION}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
+              />
+              <MoleHole
+                xInit={hole_coords[1].x}
+                yInit={hole_coords[1].y}
+                id={1}
+                handler={(x, y, id) => {}}
+              />
+            </Container>
+            {/* Hole Nr. 2 */}
+            <Container sortableChildren={true} mask={hole_masks.current[2]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={2}
+                xInit={hole_coords[2].x}
+                yInit={hole_coords[2].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={SWING_TIMER_DURATION}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
+              />
+              <MoleHole
+                xInit={hole_coords[2].x}
+                yInit={hole_coords[2].y}
+                id={2}
+                handler={(x, y, id) => {}}
+              />
+            </Container>
+            {/* Hole Nr. 3 */}
+            <Container sortableChildren={true} mask={hole_masks.current[3]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={3}
+                xInit={hole_coords[3].x}
+                yInit={hole_coords[3].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={SWING_TIMER_DURATION}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
+              />
+              <MoleHole
+                xInit={hole_coords[3].x}
+                yInit={hole_coords[3].y}
+                id={3}
+                handler={(x, y, id) => {}}
+              />
+            </Container>
+            {/* Hole Nr. 4 */}
+            <Container sortableChildren={true} mask={hole_masks.current[4]}>
+              <MoleContainer
+                stageProps={stageProps}
+                emitter={gameObserver.current}
+                id={4}
+                xInit={hole_coords[4].x}
+                yInit={hole_coords[4].y}
+                moles={moles}
+                setMoles={setMoles}
+                setMoleCount={setMoleCount}
+                haste={haste.current}
+                activeUpgrades={chosenUpgrades}
+                swingTimerDuration={SWING_TIMER_DURATION}
+                cooldownActive={cooldownActive}
+                setCooldownActive={setCooldownActive}
+                plugged={pluggedHoles}
+                unplugger={setPluggedHoles}
+              />
+              <MoleHole
+                xInit={hole_coords[4].x}
+                yInit={hole_coords[4].y}
+                id={4}
+                handler={(x, y, id) => {}}
+              />
+            </Container>
           </Container>
-          {/* Hole Nr. 1 */}
-          <Container sortableChildren={true} mask={hole_masks.current[1]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={1}
-              // moleType={moles[1].moleType}
-              xInit={hole_coords[1].x}
-              yInit={hole_coords[1].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[1].key}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[1].x} yInit={hole_coords[1].y} />
-          </Container>
-          {/* Hole Nr. 2 */}
-          <Container sortableChildren={true} mask={hole_masks.current[2]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={2}
-              // moleType={moles[2].moleType}
-              xInit={hole_coords[2].x}
-              yInit={hole_coords[2].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[2].key}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[2].x} yInit={hole_coords[2].y} />
-          </Container>
-          {/* Hole Nr. 3 */}
-          <Container sortableChildren={true} mask={hole_masks.current[3]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={3}
-              // moleType={moles[3].moleType}
-              xInit={hole_coords[3].x}
-              yInit={hole_coords[3].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[3].key}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[3].x} yInit={hole_coords[3].y} />
-          </Container>
-          {/* Hole Nr. 4 */}
-          <Container sortableChildren={true} mask={hole_masks.current[4]}>
-            <MoleContainer
-              stageProps={stageProps}
-              emitter={gameObserver.current}
-              id={4}
-              // moleType={moles[4].moleType}
-              xInit={hole_coords[4].x}
-              yInit={hole_coords[4].y}
-              moles={moles}
-              setMoles={setMoles}
-              setMoleCount={setMoleCount}
-              // key={moles[4].key]}
-              haste={haste.current}
-              activeUpgrades={chosenUpgrades}
-              swingTimerDuration={swingTimerDuration}
-              cooldownActive={cooldownActive}
-              setCooldownActive={setCooldownActive}
-            />
-            <MoleHole xInit={hole_coords[4].x} yInit={hole_coords[4].y} />
-          </Container>
-        </Container>
-      </Stage>
-      <UpgradeModal
-        stage={stage}
+        </Stage>
+      </div>
+      {/* <UpgradeModal
+        app={app}
         gameObserver={gameObserver}
         subtractLife={subtractScore}
         option1={option1}
         option2={option2}
         handleUpgradeSelection={handleUpgradeSelection}
-      />
+      /> */}
     </div>
   );
 }

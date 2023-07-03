@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Stage, Sprite, Container } from '@pixi/react';
-import { Texture, Graphics, Sprite as PIXISprite, Point } from 'pixi.js';
+import { Texture, Graphics, Sprite as PIXISprite } from 'pixi.js';
 import { EventEmitter } from '@pixi/utils';
 import { sound } from '@pixi/sound';
 import { UserContext } from '../userContext';
@@ -46,7 +46,6 @@ export default function StandardGame() {
   const MAX_TOLERANCE = 150; //the distance in pixels within the player has to rightclick to place something on a hole
   const BOMB_TIMER = 4000; //time before bomb explodes
 
-  //isGameOver
   const [isGameOver, setIsGameOver] = useState(false);
 
   //the upgrades chosen by the user stored as string array and available upgrades
@@ -77,8 +76,9 @@ export default function StandardGame() {
   });
   const [deployableCooldown, setDeployableCooldown] = useState(false);
 
-  //subscribe to mole events
   const { token } = useContext(UserContext);
+
+  //subscribe to mole events
   useEffect(() => {
     gameObserver.current.on('dead', updateScore);
     gameObserver.current.on('evaded', subtractLife);
@@ -90,6 +90,7 @@ export default function StandardGame() {
       loaded: () => console.log('sound loaded'),
     });
 
+    //prevent right-click to open context menu
     document.addEventListener('contextmenu', handleContextMenu);
 
     return () => {
@@ -112,13 +113,12 @@ export default function StandardGame() {
   }, [lives]);
 
   useEffect(() => {
-    // if (lives <= 0) setIsGameOver(true);
+    if (lives <= 0) setIsGameOver(true);
   }, [lives]);
 
   useEffect(() => {
-    if (isGameOver) {
+    if (isGameOver && token) {
       uploadHighScore(token, { score: score, gamemode: 'standard' });
-      console.log('uploadHighScore:', score);
     }
   }, [isGameOver]);
 
@@ -222,12 +222,12 @@ export default function StandardGame() {
       1;
 
     //increase difficulty every 10 moles, open modal to offer an upgrade
-    if (!(molecounter % 10)) haste.current *= 1.03;
-    if (!(molecounter % 5)) {
+    if (!(molecounter % 10)) haste.current *= 1.05;
+    if (!(molecounter % 20)) {
+      setLevel((prev) => prev + 1);
       const options = getUpgradeOptions();
       if (!options) return;
       gameObserver.current.off('evaded', subtractLife);
-      setLevel((prev) => prev + 1);
       gameObserver.current.emit('reset_incoming');
       setOptions(options);
       app.stop();
@@ -253,10 +253,6 @@ export default function StandardGame() {
     const optionB = availableDeployableUpgrades[b];
     //if no upgrades are left, return empty upgrades
     if (!optionA && !optionB) return false;
-    // return [
-    //   { name: "No Upgrade left", asset: null },
-    //   { name: "No Upgrade left", asset: null },
-    // ];
 
     return [optionA, optionB];
   }
@@ -338,6 +334,7 @@ export default function StandardGame() {
     trap_fore.zIndex = 3;
     return trap_fore;
   }
+
   /*
    * cycleRightClickDeploy: sets the current deployable object to the next one in the chosenUpgrades Array, excluding hammer upgrades
    */
@@ -473,6 +470,7 @@ export default function StandardGame() {
 
   /* ------------------------------ VISUAL OUTPUT ------------------------------ */
   /* ------------------------------ ------------- ------------------------------ */
+
   //game over at 0 lives
   if (isGameOver) {
     return (
@@ -484,6 +482,9 @@ export default function StandardGame() {
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
+          <a href="/standardgame">
+            <button>Play again</button>
+          </a>
           <Stage
             width={1}
             height={1}
@@ -535,13 +536,11 @@ export default function StandardGame() {
                 stageProps={stageProps}
                 emitter={gameObserver.current}
                 id={0}
-                // moleType={moles[0].moleType}
                 xInit={hole_coords[0].x}
                 yInit={hole_coords[0].y}
                 moles={moles}
                 setMoles={setMoles}
                 setMoleCount={setMoleCount}
-                // key={moles[0].key}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
                 swingTimerDuration={SWING_TIMER_DURATION}
@@ -564,13 +563,11 @@ export default function StandardGame() {
                 stageProps={stageProps}
                 emitter={gameObserver.current}
                 id={1}
-                // moleType={moles[1].moleType}
                 xInit={hole_coords[1].x}
                 yInit={hole_coords[1].y}
                 moles={moles}
                 setMoles={setMoles}
                 setMoleCount={setMoleCount}
-                // key={moles[1].key}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
                 swingTimerDuration={SWING_TIMER_DURATION}
@@ -593,13 +590,11 @@ export default function StandardGame() {
                 stageProps={stageProps}
                 emitter={gameObserver.current}
                 id={2}
-                // moleType={moles[2].moleType}
                 xInit={hole_coords[2].x}
                 yInit={hole_coords[2].y}
                 moles={moles}
                 setMoles={setMoles}
                 setMoleCount={setMoleCount}
-                // key={moles[2].key}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
                 swingTimerDuration={SWING_TIMER_DURATION}
@@ -622,13 +617,11 @@ export default function StandardGame() {
                 stageProps={stageProps}
                 emitter={gameObserver.current}
                 id={3}
-                // moleType={moles[3].moleType}
                 xInit={hole_coords[3].x}
                 yInit={hole_coords[3].y}
                 moles={moles}
                 setMoles={setMoles}
                 setMoleCount={setMoleCount}
-                // key={moles[3].key}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
                 swingTimerDuration={SWING_TIMER_DURATION}
@@ -651,13 +644,11 @@ export default function StandardGame() {
                 stageProps={stageProps}
                 emitter={gameObserver.current}
                 id={4}
-                // moleType={moles[4].moleType}
                 xInit={hole_coords[4].x}
                 yInit={hole_coords[4].y}
                 moles={moles}
                 setMoles={setMoles}
                 setMoleCount={setMoleCount}
-                // key={moles[4].key]}
                 haste={haste.current}
                 activeUpgrades={chosenUpgrades}
                 swingTimerDuration={SWING_TIMER_DURATION}
