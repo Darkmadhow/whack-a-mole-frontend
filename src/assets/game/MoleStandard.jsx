@@ -173,8 +173,8 @@ export default function MoleStandard({
     // Check if the cooldown is active
     if (cooldownActive && !force) return;
 
-    //tell the hammer to animate
-    emitter.emit("swing", { speed: haste });
+    //tell the hammer to animate if it wasnt a kill by other forces
+    if (!force) emitter.emit("swing", { speed: haste });
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
