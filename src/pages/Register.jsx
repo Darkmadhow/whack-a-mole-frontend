@@ -24,9 +24,15 @@ export default function Register() {
     });
 
   const audioPlayer = useContext(AudioPlayerContext);
+  const { isMuted } = useContext(UserContext);
 
   useEffect(() => {
-    if (audioPlayer) audioPlayer.play();
+    if (isMuted) audioPlayer.pause();
+    else audioPlayer.play();
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (audioPlayer && !isMuted) audioPlayer.play();
 
     return () => {
       if (audioPlayer) audioPlayer.pause();

@@ -14,9 +14,15 @@ export default function ProfileSettings() {
     passwordRepeat: "",
   });
   const audioPlayer = useContext(AudioPlayerContext);
+  const { isMuted } = useContext(UserContext);
 
   useEffect(() => {
-    if (audioPlayer) audioPlayer.pause();
+    if (isMuted) audioPlayer.pause();
+    else audioPlayer.play();
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (audioPlayer && !isMuted) audioPlayer.pause();
 
     return () => {
       if (audioPlayer) audioPlayer.pause();

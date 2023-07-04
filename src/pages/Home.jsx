@@ -6,24 +6,34 @@ import { UserContext } from "../userContext";
 import { AudioPlayerContext } from "../utils/audioPlayerContext";
 
 export default function Home() {
-  const { isAuthenticated } = useContext(UserContext);
+  const { isAuthenticated, isMuted } = useContext(UserContext);
   const audioPlayer = useContext(AudioPlayerContext);
   const { firstVisit, setFirstVisit } = useContext(AudioPlayerContext);
 
-  const handlePageClick = () => {
-    if (audioPlayer) {
+  // const handlePageClick = () => {
+  //   if (audioPlayer) {
+  //     if (firstVisit) {
+  //       audioPlayer.setIntroAndLoop();
+  //       setFirstVisit(false);
+  //     }
+  //     audioPlayer.play();
+  //     // document.removeEventListener("click", handlePageClick);
+  //   }
+  // };
+
+  useEffect(() => {
+    if (!isMuted) {
       if (firstVisit) {
         audioPlayer.setIntroAndLoop();
         setFirstVisit(false);
       }
       audioPlayer.play();
-      document.removeEventListener("click", handlePageClick);
-    }
-  };
+    } else audioPlayer.pause();
+  }, [isMuted]);
 
   useEffect(() => {
-    document.addEventListener("click", handlePageClick);
-    if (audioPlayer) audioPlayer.play();
+    // document.addEventListener("click", handlePageClick);
+    if (audioPlayer && !isMuted) audioPlayer.play();
 
     return () => {
       if (audioPlayer) {

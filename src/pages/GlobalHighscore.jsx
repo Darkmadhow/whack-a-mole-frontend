@@ -3,13 +3,20 @@ import NavBar from "../components/NavBar";
 import ScoreTable from "../components/ScoreTable";
 import "../styles/globalHighscore.css";
 import { AudioPlayerContext } from "../utils/audioPlayerContext";
+import { UserContext } from "../userContext";
 
 export default function GlobalHighscore() {
   const [gamemode, setGamemode] = useState("standard");
   const audioPlayer = useContext(AudioPlayerContext);
+  const { isMuted } = useContext(UserContext);
 
   useEffect(() => {
-    if (audioPlayer) audioPlayer.play();
+    if (isMuted) audioPlayer.pause();
+    else audioPlayer.play();
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (audioPlayer && !isMuted) audioPlayer.play();
 
     return () => {
       if (audioPlayer) audioPlayer.pause();
