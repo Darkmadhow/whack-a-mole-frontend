@@ -9,4 +9,5 @@ export const globalMoleSounds = {
   shroom: 'src/assets/sounds/poisoncloud.ogg', // https://freesound.org/people/wobesound/sounds/488392/
   golden: 'src/assets/sounds/goldboing.ogg',
   powerup: 'src/assets/sounds/538149__fupicat__notification.wav', // https://freesound.org/people/Fupicat/sounds/538149/
+  gameover: 'src/assets/sounds/gameover.ogg',
 };

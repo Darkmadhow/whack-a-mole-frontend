@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useTick } from "@pixi/react";
-import shroom from "../img/shroom.png";
-import { sound } from "@pixi/sound";
+import React, { useEffect, useRef, useState } from 'react';
+import { Sprite, useTick } from '@pixi/react';
+import shroom from '../img/shroom.png';
+import { sound } from '@pixi/sound';
 
 export default function MoleBunny({
   xInit,
@@ -13,6 +13,7 @@ export default function MoleBunny({
   swingTimerDuration,
   cooldownActive,
   setCooldownActive,
+  isMuted,
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
@@ -32,11 +33,11 @@ export default function MoleBunny({
   const deadTimer = useRef(null);
 
   const moleStates = {
-    dead: "dead",
-    alive: "alive",
-    spawning: "spawning",
-    dying: "dying",
-    down: "down",
+    dead: 'dead',
+    alive: 'alive',
+    spawning: 'spawning',
+    dying: 'dying',
+    down: 'down',
   };
 
   const [moleState, setMoleState] = useState(moleStates.dead);
@@ -78,14 +79,14 @@ export default function MoleBunny({
     Upon Entering Stage, set a random timer upon which the mole wakes up and subscribe to game events
   */
   useEffect(() => {
-    emitter.on("reset_incoming", stopAllTimeouts);
+    emitter.on('reset_incoming', stopAllTimeouts);
 
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
     }, getRandomTimeout());
     return () => {
-      emitter.off("reset_incoming", stopAllTimeouts);
+      emitter.off('reset_incoming', stopAllTimeouts);
 
       clearTimeout(aliveTimer.current);
       clearTimeout(downTimer.current);
@@ -121,7 +122,7 @@ export default function MoleBunny({
     clearTimeout(stateTimer.current);
     clearTimeout(deadTimer.current);
     clearTimeout(spawnTimer.current);
-    emitter.emit("dead", { id: my_id.current, value: 0, time_value: 0 });
+    emitter.emit('dead', { id: my_id.current, value: 0, time_value: 0 });
   }
 
   /*
@@ -149,9 +150,9 @@ export default function MoleBunny({
     if (cooldownActive) return;
 
     //tell the hammer to animate
-    emitter.emit("swing", { speed: haste });
+    emitter.emit('swing', { speed: haste });
 
-    sound.play("shroom");
+    if (!isMuted) sound.play('shroom');
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
@@ -159,7 +160,7 @@ export default function MoleBunny({
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
-      emitter.emit("dead", {
+      emitter.emit('dead', {
         id: my_id.current,
         value: my_value.current,
         time_value: my_time_value * -1,
@@ -168,7 +169,7 @@ export default function MoleBunny({
 
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
-      (upgrade) => upgrade.name === "rocket_hammer"
+      (upgrade) => upgrade.name === 'rocket_hammer'
     )
       ? 0.5
       : 1;
@@ -189,10 +190,9 @@ export default function MoleBunny({
       zIndex={1}
       eventMode={
         moleState === moleStates.dying || moleState === moleStates.dead
-          ? "none"
-          : "static"
+          ? 'none'
+          : 'static'
       }
-      pointerdown={killShroom}
-    ></Sprite>
+      pointerdown={killShroom}></Sprite>
   );
 }

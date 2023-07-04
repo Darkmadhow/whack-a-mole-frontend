@@ -77,7 +77,7 @@ export default function StandardGame() {
   });
   const [deployableCooldown, setDeployableCooldown] = useState(false);
 
-  const { token } = useContext(UserContext);
+  const { token, isMuted, setIsMuted } = useContext(UserContext);
 
   //subscribe to mole events
   useEffect(() => {
@@ -117,6 +117,7 @@ export default function StandardGame() {
 
   useEffect(() => {
     if (isGameOver && token) {
+      if (!isMuted) sound.play('gameover');
       uploadHighScore(token, { score: score, gamemode: 'standard' });
     }
   }, [isGameOver]);
@@ -226,7 +227,7 @@ export default function StandardGame() {
       setLevel((prev) => prev + 1);
       const options = getUpgradeOptions();
       if (!options) return;
-      sound.play('powerup');
+      if (!isMuted) sound.play('powerup');
       gameObserver.current.off('evaded', subtractLife);
       gameObserver.current.emit('reset_incoming');
       setOptions(options);
@@ -291,7 +292,7 @@ export default function StandardGame() {
         });
         setTimeout(() => {
           gameObserver.current.emit('boom', { source: id });
-          sound.play('bomb');
+          if (!isMuted) sound.play('bomb');
         }, BOMB_TIMER);
         break;
       case 'cover':
@@ -499,6 +500,21 @@ export default function StandardGame() {
         <div className="score-display">Score: {score}</div>
         <div className="lives">Lives: {lives}</div>
         <div className="level">Stage: {level}</div>
+        {isMuted ? (
+          <img
+            src="src/assets/img/no-sound.png"
+            alt="mute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        ) : (
+          <img
+            src="src/assets/img/sound.png"
+            alt="unmute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        )}
       </div>
       <div className="game-container">
         <div className="chosen-upgrades">
@@ -548,6 +564,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[0].x}
@@ -574,6 +591,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[1].x}
@@ -600,6 +618,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[2].x}
@@ -626,6 +645,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[3].x}
@@ -652,6 +672,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[4].x}

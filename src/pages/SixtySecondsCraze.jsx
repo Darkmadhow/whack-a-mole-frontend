@@ -74,7 +74,7 @@ export default function SixtySecondsCraze() {
   });
   const [deployableCooldown, setDeployableCooldown] = useState(false);
 
-  const { token } = useContext(UserContext);
+  const { token, isMuted, setIsMuted } = useContext(UserContext);
 
   //subscribe to mole events
   useEffect(() => {
@@ -120,6 +120,7 @@ export default function SixtySecondsCraze() {
 
   useEffect(() => {
     if (isGameOver && token) {
+      if (!isMuted) sound.play('gameover');
       uploadHighScore(token, { score: score, gamemode: 'craze' });
     }
     if (isGameOver) clearInterval(gameTimer.current);
@@ -503,6 +504,21 @@ export default function SixtySecondsCraze() {
         <div className="score-display">Score: {score}</div>
         <div className="lives">Time: {time}</div>
         <div className="level">Stage: {level}</div>
+        {isMuted ? (
+          <img
+            src="src/assets/img/no-sound.png"
+            alt="mute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        ) : (
+          <img
+            src="src/assets/img/sound.png"
+            alt="unmute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        )}
       </div>
       <div className="game-container">
         {/* <div className="chosen-upgrades">
@@ -552,6 +568,7 @@ export default function SixtySecondsCraze() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[0].x}
@@ -578,6 +595,7 @@ export default function SixtySecondsCraze() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[1].x}
@@ -604,6 +622,7 @@ export default function SixtySecondsCraze() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[2].x}
@@ -630,6 +649,7 @@ export default function SixtySecondsCraze() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[3].x}
@@ -656,6 +676,7 @@ export default function SixtySecondsCraze() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[4].x}

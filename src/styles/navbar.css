@@ -11,6 +11,7 @@
 .navbar-global a {
   color: #eee;
 }
+
 .navbar-global a:hover {
   color: #13cf09;
 }
@@ -26,12 +27,18 @@
   width: 1.5rem;
 }
 
+.muteBtn {
+  width: 1.5rem;
+  cursor: pointer;
+}
+
 @media screen and (max-width: 480px) {
   .navbar-global {
     padding: 0.5rem 0.5rem;
     justify-content: space-evenly;
     margin: 0 1rem;
   }
+
   .navbar-global .logout-menu {
     column-gap: 0.5rem;
   }
