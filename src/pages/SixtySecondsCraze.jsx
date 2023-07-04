@@ -119,8 +119,8 @@ export default function SixtySecondsCraze() {
   }, [time]);
 
   useEffect(() => {
+    if (!isMuted && isGameOver) sound.play('gameover');
     if (isGameOver && token) {
-      if (!isMuted) sound.play('gameover');
       uploadHighScore(token, { score: score, gamemode: 'craze' });
     }
     if (isGameOver) clearInterval(gameTimer.current);

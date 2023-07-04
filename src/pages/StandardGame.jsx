@@ -112,12 +112,12 @@ export default function StandardGame() {
   }, [lives]);
 
   useEffect(() => {
-    if (lives <= 0) setIsGameOver(true);
+    if (lives <= -20) setIsGameOver(true);
   }, [lives]);
 
   useEffect(() => {
+    if (!isMuted && isGameOver) sound.play('gameover');
     if (isGameOver && token) {
-      if (!isMuted) sound.play('gameover');
       uploadHighScore(token, { score: score, gamemode: 'standard' });
     }
   }, [isGameOver]);
@@ -473,9 +473,25 @@ export default function StandardGame() {
     return (
       <div className="game">
         <div className="game-over-screen">
+          <h1>Game Over</h1>
+          {chosenUpgrades.length > 0 ? (
+            <section className="chosen-upgrades-gameover">
+              {chosenUpgrades.map((upgrade) => (
+                <figure className="upgrade-asset-container">
+                  <img
+                    src={upgrade.asset}
+                    alt={upgrade.name}
+                    key={upgrade.name}
+                    className="upgrade-asset"
+                  />
+                </figure>
+              ))}
+            </section>
+          ) : (
+            ''
+          )}
           <h2>You got {score} points</h2>
           {/* TODO: Load Highscore placement */}
-
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>

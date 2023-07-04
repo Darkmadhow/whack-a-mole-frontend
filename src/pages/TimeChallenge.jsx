@@ -124,8 +124,8 @@ export default function TimeChallenge() {
   }, [time]);
 
   useEffect(() => {
+    if (!isMuted && isGameOver) sound.play('gameover');
     if (isGameOver && token) {
-      if (!isMuted) sound.play('gameover');
       uploadHighScore(token, { score: score, gamemode: 'time' });
     }
     if (isGameOver) clearInterval(gameTimer.current);
