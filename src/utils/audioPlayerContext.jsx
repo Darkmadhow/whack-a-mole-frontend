@@ -6,6 +6,7 @@ export const AudioPlayerProvider = ({ children }) => {
   const [audioPlayer, setAudioPlayer] = useState(null);
   const [source, setSource] = useState("");
   const [loop, setLoop] = useState(false);
+  const [firstVisit, setFirstVisit] = useState(true);
 
   //set properties if anything changes
   useEffect(() => {
@@ -50,6 +51,8 @@ export const AudioPlayerProvider = ({ children }) => {
         setSource,
         setLoop,
         setIntroAndLoop,
+        firstVisit,
+        setFirstVisit,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import NavBar from "../components/NavBar";
 import { Link } from "react-router-dom";
 import "../styles/home.css";
@@ -8,10 +8,14 @@ import { AudioPlayerContext } from "../utils/audioPlayerContext";
 export default function Home() {
   const { isAuthenticated } = useContext(UserContext);
   const audioPlayer = useContext(AudioPlayerContext);
+  const { firstVisit, setFirstVisit } = useContext(AudioPlayerContext);
 
   const handlePageClick = () => {
     if (audioPlayer) {
-      audioPlayer.setIntroAndLoop();
+      if (firstVisit) {
+        audioPlayer.setIntroAndLoop();
+        setFirstVisit(false);
+      }
       audioPlayer.play();
       document.removeEventListener("click", handlePageClick);
     }

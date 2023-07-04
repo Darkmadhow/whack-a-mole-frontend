@@ -6,8 +6,8 @@ export default function SingleScore({ data }) {
     <div className="score">
       {data ? (
         <>
-          <div>{data.user.username}</div>
-          <div>{data.score}</div>
+          <div className="user">{data.user.username}</div>
+          <div className="user-score">{data.score}</div>
         </>
       ) : (
         "No data"

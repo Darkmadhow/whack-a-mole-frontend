@@ -34,6 +34,7 @@
   width: max(33%, 200px);
   margin-bottom: 1rem;
   padding: 0.3rem;
+  background-color: #3b3b3b;
 }
 .register-page button {
   margin-top: 2rem;
