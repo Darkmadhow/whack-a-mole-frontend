@@ -58,6 +58,21 @@ export default function NavBar() {
       <NavLink to="/">Home</NavLink>
       <NavLink to="/login">Login</NavLink>
       <NavLink to="/register">Register</NavLink>
+      {isMuted ? (
+        <img
+          src="src/assets/img/no-sound.png"
+          alt="mute"
+          className="muteBtn"
+          onPointerDown={() => setIsMuted(!isMuted)}
+        />
+      ) : (
+        <img
+          src="src/assets/img/sound.png"
+          alt="unmute"
+          className="muteBtn"
+          onPointerDown={() => setIsMuted(!isMuted)}
+        />
+      )}
     </div>
   );
 }
