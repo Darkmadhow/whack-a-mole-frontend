@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
 import moleStandard from "../img/mole.png";
 import moleStandardHit from "../img/mole_hit.png";
+import { sound } from "@pixi/sound";
 
 export default function MoleStandard({
   xInit,
@@ -112,6 +113,7 @@ export default function MoleStandard({
     if (moleState === moleStates.alive) {
       //if there's a trap on the hole, stay up for longer
       if (plugged[id] && plugged[id].name === "trap") {
+        sound.play("trap");
         aliveTimer.current = setTimeout(() => {
           removePlug();
           //when alive timer's up, go to hiding state and reduce point value
@@ -175,6 +177,8 @@ export default function MoleStandard({
 
     //tell the hammer to animate if it wasnt a kill by other forces
     if (!force) emitter.emit("swing", { speed: haste });
+
+    sound.play("mole");
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);

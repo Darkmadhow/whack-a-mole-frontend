@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
 import molePeeker from "../img/mole_peeker.png";
 import molePeekerHit from "../img/mole_peeker_hit.png";
+import { sound } from "@pixi/sound";
 
 export default function MolePeeker({
   xInit,
@@ -109,6 +110,7 @@ export default function MolePeeker({
     if (moleState === moleStates.alive) {
       //if there's a trap on the hole, stay up for longer
       if (plugged[id] && plugged[id].name === "trap") {
+        sound.play("trap");
         aliveTimer.current = setTimeout(() => {
           removePlug();
           //when alive timer's up, go to hiding state and reduce point value
@@ -172,6 +174,8 @@ export default function MolePeeker({
 
     //tell the hammer to animate if it wasnt a kill by other forces
     if (!force) emitter.emit("swing", { speed: haste });
+
+    sound.play("peeker");
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);

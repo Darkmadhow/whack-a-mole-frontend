@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Sprite, useTick } from "@pixi/react";
 import shroom from "../img/shroom.png";
+import { sound } from "@pixi/sound";
 
 export default function MoleBunny({
   xInit,
@@ -149,6 +150,8 @@ export default function MoleBunny({
 
     //tell the hammer to animate
     emitter.emit("swing", { speed: haste });
+
+    sound.play("shroom");
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
