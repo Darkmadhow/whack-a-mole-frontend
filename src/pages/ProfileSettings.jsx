@@ -1,8 +1,9 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import NavBar from "../components/NavBar";
 import { UserContext } from "../userContext";
 import { updateUser } from "../utils/auth";
 import "../styles/profileSettings.css";
+import AudioPlayerContext from "../utils/audioPlayerContext";
 
 export default function ProfileSettings() {
   const { user, setUser, isAuthenticated, isLoading, setIsLoading, token } =
@@ -12,6 +13,15 @@ export default function ProfileSettings() {
     password: "",
     passwordRepeat: "",
   });
+  const audioPlayer = useContext(AudioPlayerContext);
+
+  useEffect(() => {
+    if (audioPlayer) audioPlayer.pause();
+
+    return () => {
+      if (audioPlayer) audioPlayer.pause();
+    };
+  }, []);
 
   const handleChange = (e) =>
     setFormState((prev) => ({ ...prev, [e.target.id]: e.target.value }));

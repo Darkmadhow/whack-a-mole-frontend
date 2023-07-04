@@ -1,9 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { UserContext } from "../userContext";
 import { loginUser, getUser } from "../utils/auth";
 import NavBar from "../components/NavBar";
 import "../styles/login.css";
+import AudioPlayerContext from "../utils/audioPlayerContext";
 
 export default function Login() {
   const {
@@ -18,6 +19,16 @@ export default function Login() {
     username: "",
     password: "",
   });
+
+  const audioPlayer = useContext(AudioPlayerContext);
+
+  useEffect(() => {
+    if (audioPlayer) audioPlayer.play();
+
+    return () => {
+      if (audioPlayer) audioPlayer.pause();
+    };
+  }, []);
 
   const handleChange = (e) =>
     setFormState((prev) => ({ ...prev, [e.target.id]: e.target.value }));
