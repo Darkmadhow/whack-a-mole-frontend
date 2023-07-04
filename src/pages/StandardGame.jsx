@@ -189,19 +189,18 @@ export default function StandardGame() {
   /* ----------------------------------- STAGE SETTINGS ----------------------------------- */
   /* ----------------------------------- -------------- ----------------------------------- */
   const stageProps = {
-    height: 900,
+    height: 800,
     width: 1400,
     options: {
       backgroundAlpha: 0,
     },
   };
-
   const hole_coords = [
-    { x: 300, y: 200 },
-    { x: 600, y: 200 },
-    { x: 900, y: 200 },
-    { x: 400, y: 400 },
-    { x: 700, y: 400 },
+    { x: 400, y: 300 },
+    { x: 700, y: 300 },
+    { x: 1000, y: 300 },
+    { x: 500, y: 500 },
+    { x: 800, y: 500 },
   ];
 
   const hole_masks = useRef({
