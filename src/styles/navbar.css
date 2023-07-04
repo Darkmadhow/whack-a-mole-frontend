@@ -42,4 +42,12 @@
   .navbar-global .logout-menu {
     column-gap: 0.5rem;
   }
+
+  .user-name{
+    max-width: 1.2rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #13cf09;
+  }
 }

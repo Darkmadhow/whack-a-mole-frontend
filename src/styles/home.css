@@ -16,9 +16,20 @@
 .homepage .main-menu {
   display: flex;
   flex-direction: column;
+  align-items: center;
   row-gap: 1.5rem;
 }
 
 .homepage h1 {
   font-family: "Luckiest Guy", Verdana, Geneva;
+  font-size: calc(3em + 2vw);
+}
+
+.homepage .main-menu a {
+  min-width: 200px;
+  max-width: 50%;
+}
+
+.homepage .main-menu button {
+  width: 100%;
 }
