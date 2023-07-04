@@ -16,6 +16,7 @@ export default function MoleGolden({
   setCooldownActive,
   plugged,
   unplugger,
+  isMuted,
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
@@ -113,7 +114,7 @@ export default function MoleGolden({
     if (moleState === moleStates.alive) {
       //if there's a trap on the hole, stay up for longer
       if (plugged[id] && plugged[id].name === 'trap') {
-        sound.play('trap');
+        if (!isMuted) sound.play('trap');
         aliveTimer.current = setTimeout(() => {
           removePlug();
           //when alive timer's up, go to hiding state and reduce point value
@@ -176,9 +177,9 @@ export default function MoleGolden({
     if (cooldownActive && !force) return;
 
     //tell the hammer to animate if it wasnt a kill by other forces
-    if (!force) emitter.emit("swing", { speed: haste });
+    if (!force) emitter.emit('swing', { speed: haste });
 
-    sound.play('golden');
+    if (!isMuted) sound.play('golden');
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);

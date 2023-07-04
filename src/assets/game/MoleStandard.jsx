@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useTick } from "@pixi/react";
-import moleStandard from "../img/mole.png";
-import moleStandardHit from "../img/mole_hit.png";
-import { sound } from "@pixi/sound";
+import React, { useEffect, useRef, useState } from 'react';
+import { Sprite, useTick } from '@pixi/react';
+import moleStandard from '../img/mole.png';
+import moleStandardHit from '../img/mole_hit.png';
+import { sound } from '@pixi/sound';
 
 export default function MoleStandard({
   xInit,
@@ -16,6 +16,7 @@ export default function MoleStandard({
   setCooldownActive,
   plugged,
   unplugger,
+  isMuted,
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
@@ -37,11 +38,11 @@ export default function MoleStandard({
   const deadTimer = useRef(null);
 
   const moleStates = {
-    dead: "dead",
-    alive: "alive",
-    spawning: "spawning",
-    dying: "dying",
-    down: "down",
+    dead: 'dead',
+    alive: 'alive',
+    spawning: 'spawning',
+    dying: 'dying',
+    down: 'down',
   };
 
   const [moleState, setMoleState] = useState(moleStates.dead);
@@ -84,16 +85,16 @@ export default function MoleStandard({
     Upon Entering Stage, set a random timer upon which the mole wakes up and subscribe to game events
   */
   useEffect(() => {
-    emitter.on("reset_incoming", stopAllTimeouts);
-    emitter.on("boom", killMoleForcefully);
+    emitter.on('reset_incoming', stopAllTimeouts);
+    emitter.on('boom', killMoleForcefully);
 
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
     }, getRandomTimeout());
     return () => {
-      emitter.off("reset_incoming", stopAllTimeouts);
-      emitter.off("boom", killMoleForcefully);
+      emitter.off('reset_incoming', stopAllTimeouts);
+      emitter.off('boom', killMoleForcefully);
 
       // clearTimeout(aliveTimer.current);
       // clearTimeout(downTimer.current);
@@ -112,8 +113,8 @@ export default function MoleStandard({
   useEffect(() => {
     if (moleState === moleStates.alive) {
       //if there's a trap on the hole, stay up for longer
-      if (plugged[id] && plugged[id].name === "trap") {
-        sound.play("trap");
+      if (plugged[id] && plugged[id].name === 'trap') {
+        if (!isMuted) sound.play('trap');
         aliveTimer.current = setTimeout(() => {
           removePlug();
           //when alive timer's up, go to hiding state and reduce point value
@@ -131,7 +132,7 @@ export default function MoleStandard({
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", {
+      emitter.emit('evaded', {
         value: my_value.current,
         time_value: my_time_value,
         craze_value: my_craze_value.current,
@@ -176,9 +177,9 @@ export default function MoleStandard({
     if (cooldownActive && !force) return;
 
     //tell the hammer to animate if it wasnt a kill by other forces
-    if (!force) emitter.emit("swing", { speed: haste });
+    if (!force) emitter.emit('swing', { speed: haste });
 
-    sound.play("mole");
+    if (!isMuted) sound.play('mole');
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
@@ -188,7 +189,7 @@ export default function MoleStandard({
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
       // console.log(my_id.current, " died");
-      emitter.emit("dead", {
+      emitter.emit('dead', {
         id: my_id.current,
         value: my_value.current,
         time_value: my_time_value,
@@ -200,7 +201,7 @@ export default function MoleStandard({
 
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
-      (upgrade) => upgrade.name === "rocket_hammer"
+      (upgrade) => upgrade.name === 'rocket_hammer'
     )
       ? 0.5
       : 1;
@@ -230,10 +231,9 @@ export default function MoleStandard({
       zIndex={1}
       eventMode={
         moleState === moleStates.dying || moleState === moleStates.dead
-          ? "none"
-          : "static"
+          ? 'none'
+          : 'static'
       }
-      pointerdown={() => killMole(false)}
-    ></Sprite>
+      pointerdown={() => killMole(false)}></Sprite>
   );
 }

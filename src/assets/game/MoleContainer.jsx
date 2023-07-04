@@ -21,6 +21,7 @@ export default function MoleContainer({
   setCooldownActive,
   plugged,
   unplugger,
+  isMuted,
 }) {
   /*
    * replaceMole: replaces the string of the recently died mole with a new one
@@ -90,6 +91,7 @@ export default function MoleContainer({
           setCooldownActive={setCooldownActive}
           plugged={plugged}
           unplugger={unplugger}
+          isMuted={isMuted}
         />
       );
     case 'hardhat':
@@ -107,6 +109,7 @@ export default function MoleContainer({
           setCooldownActive={setCooldownActive}
           plugged={plugged}
           unplugger={unplugger}
+          isMuted={isMuted}
         />
       );
     case 'golden':
@@ -124,6 +127,7 @@ export default function MoleContainer({
           setCooldownActive={setCooldownActive}
           plugged={plugged}
           unplugger={unplugger}
+          isMuted={isMuted}
         />
       );
     case 'bunny':
@@ -141,6 +145,7 @@ export default function MoleContainer({
           setCooldownActive={setCooldownActive}
           plugged={plugged}
           unplugger={unplugger}
+          isMuted={isMuted}
         />
       );
     case 'shroom':
@@ -158,6 +163,7 @@ export default function MoleContainer({
           setCooldownActive={setCooldownActive}
           plugged={plugged}
           unplugger={unplugger}
+          isMuted={isMuted}
         />
       );
     default:
@@ -175,6 +181,7 @@ export default function MoleContainer({
           setCooldownActive={setCooldownActive}
           plugged={plugged}
           unplugger={unplugger}
+          isMuted={isMuted}
         />
       );
   }

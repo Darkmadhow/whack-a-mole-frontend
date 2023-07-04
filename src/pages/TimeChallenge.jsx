@@ -78,7 +78,7 @@ export default function TimeChallenge() {
   });
   const [deployableCooldown, setDeployableCooldown] = useState(false);
 
-  const { token } = useContext(UserContext);
+  const { token, isMuted, setIsMuted } = useContext(UserContext);
 
   //subscribe to mole events
   useEffect(() => {
@@ -125,6 +125,7 @@ export default function TimeChallenge() {
 
   useEffect(() => {
     if (isGameOver && token) {
+      if (!isMuted) sound.play('gameover');
       uploadHighScore(token, { score: score, gamemode: 'time' });
     }
     if (isGameOver) clearInterval(gameTimer.current);
@@ -233,7 +234,7 @@ export default function TimeChallenge() {
       setLevel((prev) => prev + 1);
       const options = getUpgradeOptions();
       if (!options) return;
-      sound.play('powerup');
+      if (!isMuted) sound.play('powerup');
       gameObserver.current.off('evaded', subtractTime);
       gameObserver.current.emit('reset_incoming');
       setOptions(options);
@@ -298,7 +299,7 @@ export default function TimeChallenge() {
         });
         setTimeout(() => {
           gameObserver.current.emit('boom', { source: id });
-          sound.play('bomb');
+          if (!isMuted) sound.play('bomb');
         }, BOMB_TIMER);
         break;
       case 'cover':
@@ -506,6 +507,21 @@ export default function TimeChallenge() {
         <div className="score-display">Score: {score}</div>
         <div className="lives">Time: {time}</div>
         <div className="level">Stage: {level}</div>
+        {isMuted ? (
+          <img
+            src="src/assets/img/no-sound.png"
+            alt="mute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        ) : (
+          <img
+            src="src/assets/img/sound.png"
+            alt="unmute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        )}
       </div>
       <div className="game-container">
         <div className="chosen-upgrades">
@@ -555,6 +571,7 @@ export default function TimeChallenge() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[0].x}
@@ -581,6 +598,7 @@ export default function TimeChallenge() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[1].x}
@@ -607,6 +625,7 @@ export default function TimeChallenge() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[2].x}
@@ -633,6 +652,7 @@ export default function TimeChallenge() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[3].x}
@@ -659,6 +679,7 @@ export default function TimeChallenge() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[4].x}
