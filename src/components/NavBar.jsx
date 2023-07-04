@@ -2,8 +2,6 @@ import React from "react";
 import { useContext } from "react";
 import { NavLink } from "react-router-dom";
 import { UserContext } from "../userContext";
-import muteIcon from "../assets/img/no-sound.png";
-import unmuteIcon from "../assets/img/sound.png";
 import "../styles/navbar.css";
 
 export default function NavBar() {
@@ -38,14 +36,14 @@ export default function NavBar() {
         </NavLink>
         {isMuted ? (
           <img
-            src="src/assets/img/no-sound.png"
+            src="no-sound.png"
             alt="mute"
             className="muteBtn"
             onPointerDown={() => setIsMuted(!isMuted)}
           />
         ) : (
           <img
-            src="src/assets/img/sound.png"
+            src="sound.png"
             alt="unmute"
             className="muteBtn"
             onPointerDown={() => setIsMuted(!isMuted)}
@@ -60,14 +58,14 @@ export default function NavBar() {
       <NavLink to="/register">Register</NavLink>
       {isMuted ? (
         <img
-          src="src/assets/img/no-sound.png"
+          src="no-sound.png"
           alt="mute"
           className="muteBtn"
           onPointerDown={() => setIsMuted(!isMuted)}
         />
       ) : (
         <img
-          src="src/assets/img/sound.png"
+          src="sound.png"
           alt="unmute"
           className="muteBtn"
           onPointerDown={() => setIsMuted(!isMuted)}
