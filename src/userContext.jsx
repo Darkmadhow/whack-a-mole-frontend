@@ -10,6 +10,7 @@ const UserContextProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     localStorage.getItem("token") ? true : false
   );
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -28,6 +29,8 @@ const UserContextProvider = ({ children }) => {
         setIsLoading,
         isAuthenticated,
         setIsAuthenticated,
+        isMuted,
+        setIsMuted,
       }}
     >
       {children}

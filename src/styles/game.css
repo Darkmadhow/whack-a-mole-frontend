@@ -1,6 +1,5 @@
 .game {
-  background: url("../assets/img/game_background.png") no-repeat center center
-    fixed;
+  background: url("../assets/img/game_background.png") no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
@@ -12,6 +11,7 @@
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
+  padding-top: 2rem;
 }
 
 .game-stats,
@@ -30,6 +30,26 @@
   flex-direction: column;
   row-gap: 1rem;
   align-items: center;
+}
+
+.game-over-screen h1 {
+  font-family: "Luckiest Guy", Verdana, Geneva;
+}
+
+.game-over-screen .chosen-upgrades-gameover {
+  display: flex;
+  column-gap: 0.5rem;
+}
+
+.game-over-screen .upgrade-asset-container {
+  padding: 1.5rem;
+  border: solid 1px #EEE;
+  border-radius: 50%;
+}
+
+.game-over-screen .upgrade-asset {
+  width: 3rem;
+  max-height: 3rem;
 }
 
 .game .chosen-upgrades {

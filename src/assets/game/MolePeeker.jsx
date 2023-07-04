@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Sprite, useTick } from "@pixi/react";
-import molePeeker from "../img/mole_peeker.png";
-import molePeekerHit from "../img/mole_peeker_hit.png";
+import React, { useEffect, useRef, useState } from 'react';
+import { Sprite, useTick } from '@pixi/react';
+import molePeeker from '../img/mole_peeker.png';
+import molePeekerHit from '../img/mole_peeker_hit.png';
+import { sound } from '@pixi/sound';
 
 export default function MolePeeker({
   xInit,
@@ -15,6 +16,7 @@ export default function MolePeeker({
   setCooldownActive,
   plugged,
   unplugger,
+  isMuted,
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
@@ -36,11 +38,11 @@ export default function MolePeeker({
   const deadTimer = useRef(null);
 
   const moleStates = {
-    dead: "dead",
-    alive: "alive",
-    spawning: "spawning",
-    dying: "dying",
-    down: "down",
+    dead: 'dead',
+    alive: 'alive',
+    spawning: 'spawning',
+    dying: 'dying',
+    down: 'down',
   };
 
   const [moleState, setMoleState] = useState(moleStates.dead);
@@ -82,16 +84,16 @@ export default function MolePeeker({
     Upon Entering Stage, set a random timer upon which the mole wakes up and subscribe to game events
   */
   useEffect(() => {
-    emitter.on("reset_incoming", stopAllTimeouts);
-    emitter.on("boom", killMoleForcefully);
+    emitter.on('reset_incoming', stopAllTimeouts);
+    emitter.on('boom', killMoleForcefully);
 
     spawnTimer.current = setTimeout(() => {
       setStateTimer(moleStates.alive);
       setMoleState(moleStates.spawning);
     }, getRandomTimeout());
     return () => {
-      emitter.off("reset_incoming", stopAllTimeouts);
-      emitter.off("boom", killMoleForcefully);
+      emitter.off('reset_incoming', stopAllTimeouts);
+      emitter.off('boom', killMoleForcefully);
 
       clearTimeout(aliveTimer.current);
       clearTimeout(downTimer.current);
@@ -108,7 +110,8 @@ export default function MolePeeker({
   useEffect(() => {
     if (moleState === moleStates.alive) {
       //if there's a trap on the hole, stay up for longer
-      if (plugged[id] && plugged[id].name === "trap") {
+      if (plugged[id] && plugged[id].name === 'trap') {
+        if (!isMuted) sound.play('trap');
         aliveTimer.current = setTimeout(() => {
           removePlug();
           //when alive timer's up, go to hiding state and reduce point value
@@ -126,7 +129,7 @@ export default function MolePeeker({
     }
     //resurface after a while, reset animation timeline
     if (moleState === moleStates.down) {
-      emitter.emit("evaded", {
+      emitter.emit('evaded', {
         value: my_value.current,
         time_value: my_time_value,
         craze_value: my_craze_value.current,
@@ -170,6 +173,11 @@ export default function MolePeeker({
     // Check if the cooldown is active
     if (cooldownActive && !force) return;
 
+    //tell the hammer to animate if it wasnt a kill by other forces
+    if (!force) emitter.emit('swing', { speed: haste });
+
+    if (!isMuted) sound.play('peeker');
+
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);
     setStateTimer(moleStates.dead);
@@ -177,7 +185,7 @@ export default function MolePeeker({
     clearTimeout(aliveTimer.current);
     clearTimeout(downTimer.current);
     deadTimer.current = setTimeout(() => {
-      emitter.emit("dead", {
+      emitter.emit('dead', {
         id: my_id.current,
         value: my_value.current,
         time_value: my_time_value,
@@ -189,7 +197,7 @@ export default function MolePeeker({
 
     //if the player chose the rocket hammer, trigger only half the cooldown
     const rocket_mult = activeUpgrades.some(
-      (upgrade) => upgrade.name === "rocket_hammer"
+      (upgrade) => upgrade.name === 'rocket_hammer'
     )
       ? 0.5
       : 1;
@@ -219,10 +227,9 @@ export default function MolePeeker({
       zIndex={1}
       eventMode={
         moleState === moleStates.dying || moleState === moleStates.dead
-          ? "none"
-          : "static"
+          ? 'none'
+          : 'static'
       }
-      pointerdown={() => killMole(false)}
-    ></Sprite>
+      pointerdown={() => killMole(false)}></Sprite>
   );
 }

@@ -9,6 +9,7 @@ import { NavLink } from "react-router-dom";
 import { Stage, Sprite, Container } from "@pixi/react";
 import { Texture, Graphics, Sprite as PIXISprite } from "pixi.js";
 import { EventEmitter } from "@pixi/utils";
+import { sound } from "@pixi/sound";
 import { UserContext } from "../userContext";
 import { uploadHighScore } from "../utils/scores";
 import UpgradeModal from "../components/UpgradeModal";
@@ -24,6 +25,7 @@ import cover from "../assets/img/cover.png";
 import trap from "../assets/img/trap.png";
 import trap_foreground from "../assets/img/trap_foreground.png";
 import "../styles/game.css";
+import { globalMoleSounds } from "../utils/sounds";
 
 export default function StandardGame() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
@@ -74,14 +76,17 @@ export default function StandardGame() {
     4: null,
   });
   const [deployableCooldown, setDeployableCooldown] = useState(false);
+  const [rank, setRank] = useState("... let me see");
 
-  const { token } = useContext(UserContext);
+  const { token, isMuted, setIsMuted } = useContext(UserContext);
 
   //subscribe to mole events
   useEffect(() => {
     gameObserver.current.on("dead", updateScore);
     gameObserver.current.on("evaded", subtractLife);
     gameObserver.current.on("reset", replaceAllMoles);
+
+    sound.add(globalMoleSounds);
 
     //prevent right-click to open context menu
     document.addEventListener("contextmenu", handleContextMenu);
@@ -90,6 +95,8 @@ export default function StandardGame() {
       gameObserver.current.off("dead", updateScore);
       gameObserver.current.off("evaded", subtractLife);
       gameObserver.current.off("reset", replaceAllMoles);
+
+      sound.removeAll();
 
       document.removeEventListener("contextmenu", handleContextMenu);
     };
@@ -110,8 +117,15 @@ export default function StandardGame() {
   }, [lives]);
 
   useEffect(() => {
+    if (!isMuted && isGameOver) sound.play("gameover");
     if (isGameOver && token) {
-      uploadHighScore(token, { score: score, gamemode: "standard" });
+      (async () => {
+        const res = await uploadHighScore(token, {
+          score: score,
+          gamemode: "standard",
+        });
+        setRank(res.rank + 1);
+      })();
     }
   }, [isGameOver]);
 
@@ -175,19 +189,18 @@ export default function StandardGame() {
   /* ----------------------------------- STAGE SETTINGS ----------------------------------- */
   /* ----------------------------------- -------------- ----------------------------------- */
   const stageProps = {
-    height: 900,
+    height: 800,
     width: 1400,
     options: {
       backgroundAlpha: 0,
     },
   };
-
   const hole_coords = [
-    { x: 300, y: 200 },
-    { x: 600, y: 200 },
-    { x: 900, y: 200 },
-    { x: 400, y: 400 },
-    { x: 700, y: 400 },
+    { x: 400, y: 300 },
+    { x: 700, y: 300 },
+    { x: 1000, y: 300 },
+    { x: 500, y: 500 },
+    { x: 800, y: 500 },
   ];
 
   const hole_masks = useRef({
@@ -220,6 +233,7 @@ export default function StandardGame() {
       setLevel((prev) => prev + 1);
       const options = getUpgradeOptions();
       if (!options) return;
+      if (!isMuted) sound.play("powerup");
       gameObserver.current.off("evaded", subtractLife);
       gameObserver.current.emit("reset_incoming");
       setOptions(options);
@@ -284,6 +298,7 @@ export default function StandardGame() {
         });
         setTimeout(() => {
           gameObserver.current.emit("boom", { source: id });
+          if (!isMuted) sound.play("bomb");
         }, BOMB_TIMER);
         break;
       case "cover":
@@ -464,9 +479,25 @@ export default function StandardGame() {
     return (
       <div className="game">
         <div className="game-over-screen">
+          <h1>Game Over</h1>
+          {chosenUpgrades.length > 0 ? (
+            <section className="chosen-upgrades-gameover">
+              {chosenUpgrades.map((upgrade) => (
+                <figure className="upgrade-asset-container">
+                  <img
+                    src={upgrade.asset}
+                    alt={upgrade.name}
+                    key={upgrade.name}
+                    className="upgrade-asset"
+                  />
+                </figure>
+              ))}
+            </section>
+          ) : (
+            ""
+          )}
           <h2>You got {score} points</h2>
-          {/* TODO: Load Highscore placement */}
-
+          <h3>This got you to Rank {rank}</h3>
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
@@ -491,6 +522,21 @@ export default function StandardGame() {
         <div className="score-display">Score: {score}</div>
         <div className="lives">Lives: {lives}</div>
         <div className="level">Stage: {level}</div>
+        {isMuted ? (
+          <img
+            src="src/assets/img/no-sound.png"
+            alt="mute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        ) : (
+          <img
+            src="src/assets/img/sound.png"
+            alt="unmute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        )}
       </div>
       <div className="game-container">
         <div className="chosen-upgrades">
@@ -516,7 +562,11 @@ export default function StandardGame() {
         <Stage {...stageProps} onMount={setApp}>
           <Container sortableChildren={true}>
             <Sprite texture={Texture.WHITE} width={1} height={1} zIndex={99} />
-            <Mallet chosenUpgrades={chosenUpgrades} />
+            <Mallet
+              chosenUpgrades={chosenUpgrades}
+              emitter={gameObserver.current}
+              ANIMATION_DURATION={SWING_TIMER_DURATION}
+            />
             <Reticle />
             {/* Hole Nr. 0 */}
             <Container sortableChildren={true} mask={hole_masks.current[0]}>
@@ -536,6 +586,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[0].x}
@@ -562,6 +613,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[1].x}
@@ -588,6 +640,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[2].x}
@@ -614,6 +667,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[3].x}
@@ -640,6 +694,7 @@ export default function StandardGame() {
                 setCooldownActive={setCooldownActive}
                 plugged={pluggedHoles}
                 unplugger={setPluggedHoles}
+                isMuted={isMuted}
               />
               <MoleHole
                 xInit={hole_coords[4].x}

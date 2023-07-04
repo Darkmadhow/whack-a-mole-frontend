@@ -4,6 +4,16 @@
   width: 75%;
 }
 
+.score .user{
+  text-align: left;
+  flex-grow: 1;
+}
+
+.score .user-score{
+  text-align: right;
+  flex-grow: 1;
+}
+
 @media screen and (max-width: 480px) {
   .score {
     width: 100%;

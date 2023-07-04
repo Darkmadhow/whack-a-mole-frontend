@@ -2,11 +2,13 @@ import React from "react";
 import { useContext } from "react";
 import { NavLink } from "react-router-dom";
 import { UserContext } from "../userContext";
-import settingsIcon from "../assets/img/cogwheel.svg";
+import muteIcon from "../assets/img/no-sound.png";
+import unmuteIcon from "../assets/img/sound.png";
 import "../styles/navbar.css";
 
 export default function NavBar() {
-  const { isAuthenticated, setToken, user, setUser } = useContext(UserContext);
+  const { isAuthenticated, setToken, user, setUser, isMuted, setIsMuted } =
+    useContext(UserContext);
 
   function logout() {
     setToken(null);
@@ -18,7 +20,7 @@ export default function NavBar() {
     <div className="navbar-global">
       <NavLink to="/">Home</NavLink>
       <div className="logout-menu">
-        <span>{user?.username}</span>
+        <span className="user-name">{user?.username}</span>
         <a href="/" onClick={logout}>
           Logout
         </a>
@@ -34,6 +36,21 @@ export default function NavBar() {
             <circle cx="32.82" cy="31.94" r="9.94" />
           </svg>
         </NavLink>
+        {isMuted ? (
+          <img
+            src="src/assets/img/no-sound.png"
+            alt="mute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        ) : (
+          <img
+            src="src/assets/img/sound.png"
+            alt="unmute"
+            className="muteBtn"
+            onPointerDown={() => setIsMuted(!isMuted)}
+          />
+        )}
       </div>
     </div>
   ) : (
@@ -41,6 +58,21 @@ export default function NavBar() {
       <NavLink to="/">Home</NavLink>
       <NavLink to="/login">Login</NavLink>
       <NavLink to="/register">Register</NavLink>
+      {isMuted ? (
+        <img
+          src="src/assets/img/no-sound.png"
+          alt="mute"
+          className="muteBtn"
+          onPointerDown={() => setIsMuted(!isMuted)}
+        />
+      ) : (
+        <img
+          src="src/assets/img/sound.png"
+          alt="unmute"
+          className="muteBtn"
+          onPointerDown={() => setIsMuted(!isMuted)}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Sprite, useTick } from '@pixi/react';
 import bunny from '../img/bunny.png';
 import bunnyHit from '../img/bunny_hit.png';
+import { sound } from '@pixi/sound';
 
 export default function MoleBunny({
   xInit,
@@ -13,6 +14,7 @@ export default function MoleBunny({
   swingTimerDuration,
   cooldownActive,
   setCooldownActive,
+  isMuted,
 }) {
   const [x, setX] = useState(xInit);
   const [y, setY] = useState(yInit);
@@ -148,6 +150,11 @@ export default function MoleBunny({
   function killBunny() {
     // Check if the cooldown is active
     if (cooldownActive) return;
+
+    //tell the hammer to animate
+    emitter.emit('swing', { speed: haste });
+
+    if (!isMuted) sound.play('bunny');
 
     //upon being clicked, start timer to die and change state, emit hit event with mole id
     setMoleState(moleStates.dying);

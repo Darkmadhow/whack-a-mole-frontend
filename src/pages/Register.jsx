@@ -1,9 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { UserContext } from "../userContext";
 import { registerUser, getUser } from "../utils/auth";
 import NavBar from "../components/NavBar";
 import "../styles/register.css";
+import AudioPlayerContext from "../utils/audioPlayerContext";
 
 export default function Register() {
   const {
@@ -21,6 +22,22 @@ export default function Register() {
       password: "",
       passwordRepeat: "",
     });
+
+  const audioPlayer = useContext(AudioPlayerContext);
+  const { isMuted } = useContext(UserContext);
+
+  useEffect(() => {
+    if (isMuted) audioPlayer.pause();
+    else audioPlayer.play();
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (audioPlayer && !isMuted) audioPlayer.play();
+
+    return () => {
+      if (audioPlayer) audioPlayer.pause();
+    };
+  }, []);
 
   const handleChange = (e) =>
     setFormState((prev) => ({ ...prev, [e.target.id]: e.target.value }));
