@@ -4,27 +4,27 @@ import React, {
   useEffect,
   useContext,
   useCallback,
-} from "react";
-import { NavLink } from "react-router-dom";
-import { Stage, Sprite, Container } from "@pixi/react";
-import { Texture, Graphics } from "pixi.js";
-import { EventEmitter } from "@pixi/utils";
-import { UserContext } from "../userContext";
-import { uploadHighScore } from "../utils/scores";
-import UpgradeModal from "../components/UpgradeModal";
-import MoleHole from "../assets/game/MoleHole";
-import MoleContainer from "../assets/game/MoleContainer";
-import Mallet from "../assets/game/Mallet";
-import Reticle from "../assets/game/Reticle";
-import rocketHammer from "../assets/img/mallet_rocket.png";
-import spikeHammer from "../assets/img/mallet_spikey.png";
-import droneHammer from "../assets/img/drone.png";
-import bomb from "../assets/img/bomb.png";
-import cover from "../assets/img/cover.png";
-import trap from "../assets/img/trap.png";
-import "../styles/game.css";
-import { globalMoleSounds } from "../utils/sounds";
-import { sound } from "@pixi/sound";
+} from 'react';
+import { NavLink } from 'react-router-dom';
+import { Stage, Sprite, Container } from '@pixi/react';
+import { Texture, Graphics } from 'pixi.js';
+import { EventEmitter } from '@pixi/utils';
+import { UserContext } from '../userContext';
+import { uploadHighScore } from '../utils/scores';
+import UpgradeModal from '../components/UpgradeModal';
+import MoleHole from '../assets/game/MoleHole';
+import MoleContainer from '../assets/game/MoleContainer';
+import Mallet from '../assets/game/Mallet';
+import Reticle from '../assets/game/Reticle';
+import rocketHammer from '../assets/img/mallet_rocket.png';
+import spikeHammer from '../assets/img/mallet_spikey.png';
+import droneHammer from '../assets/img/drone.png';
+import bomb from '../assets/img/bomb.png';
+import cover from '../assets/img/cover.png';
+import trap from '../assets/img/trap.png';
+import '../styles/game.css';
+import { globalMoleSounds } from '../utils/sounds';
+import { sound } from '@pixi/sound';
 
 export default function SixtySecondsCraze() {
   /* ------------------------- INITIAL VALUES SETUP ------------------------- */
@@ -50,15 +50,15 @@ export default function SixtySecondsCraze() {
   const [chosenUpgrades, setChosenUpgrades] = useState([]);
   const [availableHammerUpgrades, setAvailableHammerUpgrades] = useState([
     {
-      name: "rocket_hammer",
+      name: 'rocket_hammer',
       asset: rocketHammer,
-      descriptive_name: "Rocket Hammer",
-      desc: "Twice as fast - with rockets!",
+      descriptive_name: 'Rocket Hammer',
+      desc: 'Twice as fast - with rockets!',
     },
     {
-      name: "spike_hammer",
+      name: 'spike_hammer',
       asset: spikeHammer,
-      descriptive_name: "Spiked Hammer",
+      descriptive_name: 'Spiked Hammer',
       desc: "Doesn't care about metal",
     },
   ]);
@@ -69,17 +69,17 @@ export default function SixtySecondsCraze() {
   const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
     useState([
       {
-        name: "bomb",
+        name: 'bomb',
         asset: bomb,
-        descriptive_name: "Bomb",
-        desc: "Wipe the screen - after 4s",
+        descriptive_name: 'Bomb',
+        desc: 'Wipe the screen - after 4s',
       },
       // { name: 'cover', asset: cover },
       {
-        name: "trap",
+        name: 'trap',
         asset: trap,
-        descriptive_name: "Moletrap",
-        desc: "Not so fast, little mole!",
+        descriptive_name: 'Moletrap',
+        desc: 'Not so fast, little mole!',
       },
       // { name: 'drone', asset: droneHammer },
     ]);
@@ -93,34 +93,34 @@ export default function SixtySecondsCraze() {
     4: null,
   });
   const [deployableCooldown, setDeployableCooldown] = useState(false);
-  const [rank, setRank] = useState("... let me see");
+  const [rank, setRank] = useState('... let me see');
 
   const { token, isMuted, setIsMuted } = useContext(UserContext);
 
   //subscribe to mole events
   useEffect(() => {
-    gameObserver.current.on("dead", updateScore);
-    gameObserver.current.on("evaded", subtractScore);
-    gameObserver.current.on("reset", replaceAllMoles);
+    gameObserver.current.on('dead', updateScore);
+    gameObserver.current.on('evaded', subtractScore);
+    gameObserver.current.on('reset', replaceAllMoles);
 
     sound.add(globalMoleSounds);
 
     //prevent right-click to open context menu
-    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener('contextmenu', handleContextMenu);
 
     gameTimer.current = setInterval(() => {
       setTime((prev) => prev - 1);
     }, 1000);
 
     return () => {
-      gameObserver.current.off("dead", updateScore);
-      gameObserver.current.off("evaded", subtractScore);
-      gameObserver.current.off("reset", replaceAllMoles);
+      gameObserver.current.off('dead', updateScore);
+      gameObserver.current.off('evaded', subtractScore);
+      gameObserver.current.off('reset', replaceAllMoles);
 
       sound.removeAll();
 
       clearInterval(gameTimer.current);
-      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener('contextmenu', handleContextMenu);
     };
   }, []);
 
@@ -140,12 +140,12 @@ export default function SixtySecondsCraze() {
   }, [time]);
 
   useEffect(() => {
-    if (!isMuted && isGameOver) sound.play("gameover");
+    if (!isMuted && isGameOver) sound.play('gameover');
     if (isGameOver && token) {
       (async () => {
         const res = await uploadHighScore(token, {
           score: score,
-          gamemode: "craze",
+          gamemode: 'craze',
         });
         setRank(res.rank + 1);
       })();
@@ -166,38 +166,38 @@ export default function SixtySecondsCraze() {
 
   //current mole type in each hole, as a string array
   const [moles, setMoles] = useState([
-    { moleType: "standard", key: 1000 },
-    { moleType: "standard", key: 2000 },
-    { moleType: "standard", key: 3000 },
-    { moleType: "standard", key: 4000 },
-    { moleType: "standard", key: 5000 },
+    { moleType: 'standard', key: 1000 },
+    { moleType: 'standard', key: 2000 },
+    { moleType: 'standard', key: 3000 },
+    { moleType: 'standard', key: 4000 },
+    { moleType: 'standard', key: 5000 },
   ]);
 
   function replaceAllMoles() {
     const molesTemp = moles.map((mole) => {
       const rnd = Math.floor(Math.random() * 13);
-      let newMole = "standard";
+      let newMole = 'standard';
       switch (rnd) {
         case 0:
         case 1:
-          newMole = "peeker";
+          newMole = 'peeker';
           break;
         case 2:
         case 3:
-          newMole = "hardhat";
+          newMole = 'hardhat';
           break;
         case 4:
-          newMole = "golden";
+          newMole = 'golden';
           break;
         case 5:
         case 6:
-          newMole = "bunny";
+          newMole = 'bunny';
           break;
         case 7:
-          newMole = "shroom";
+          newMole = 'shroom';
           break;
         default:
-          newMole = "standard";
+          newMole = 'standard';
           break;
       }
 
@@ -519,10 +519,14 @@ export default function SixtySecondsCraze() {
               ))}
             </section>
           ) : (
-            ""
+            ''
           )}
           <h2>You got {score} points</h2>
-          <h3>This got you to Rank {rank}</h3>
+          <h3>
+            {token
+              ? `This got you to Rank ${rank}`
+              : `Sign up to find out your rank!`}
+          </h3>
           <NavLink to="/">
             <button>Back to Menu</button>
           </NavLink>
