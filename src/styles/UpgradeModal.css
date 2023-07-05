@@ -1,12 +1,34 @@
-.upgrade-modal button {
-    background-color: transparent;
+.upgrade-modal .modal-box {
+  background-color: #333d;
+  color: #eee;
 }
+
+.upgrade-modal button {
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 200px;
+  width: 200px;
+  padding: 10px;
+  position: relative;
+}
+
+.upgrade-modal .upgrade-desc {
+  position: absolute;
+  bottom: 5%;
+  left: 0%;
+  width: 100%;
+}
+
 .upgrade-modal .modal-action {
-    justify-content: space-evenly;
+  justify-content: space-evenly;
+  height: max-content;
 }
 .upgrade-modal .modal-action button {
-    /* width: calc(50% - 1rem); */
-    width: 50%;
-    padding-bottom: 50%;
-    background-size: cover;
+  /* width: calc(50% - 1rem); */
+  width: 50%;
+  padding-bottom: 50%;
+  background-size: cover;
 }

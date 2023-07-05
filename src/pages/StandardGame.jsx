@@ -52,8 +52,18 @@ export default function StandardGame() {
   //the upgrades chosen by the user stored as string array and available upgrades
   const [chosenUpgrades, setChosenUpgrades] = useState([]);
   const [availableHammerUpgrades, setAvailableHammerUpgrades] = useState([
-    { name: "rocket_hammer", asset: rocketHammer },
-    { name: "spike_hammer", asset: spikeHammer },
+    {
+      name: "rocket_hammer",
+      asset: rocketHammer,
+      descriptive_name: "Rocket Hammer",
+      desc: "Twice as fast - with rockets!",
+    },
+    {
+      name: "spike_hammer",
+      asset: spikeHammer,
+      descriptive_name: "Spiked Hammer",
+      desc: "Doesn't care about metal",
+    },
   ]);
   const [[option1, option2], setOptions] = useState([
     { name: null, asset: null },
@@ -61,9 +71,19 @@ export default function StandardGame() {
   ]);
   const [availableDeployableUpgrades, setAvailableDeployableUpgrades] =
     useState([
-      { name: "bomb", asset: bomb },
+      {
+        name: "bomb",
+        asset: bomb,
+        descriptive_name: "Bomb",
+        desc: "Wipe the screen - after 4s",
+      },
       // { name: "cover", asset: cover }, //TODO: What does cover do? How will it work?
-      { name: "trap", asset: trap },
+      {
+        name: "trap",
+        asset: trap,
+        descriptive_name: "Moletrap",
+        desc: "Not so fast, little mole!",
+      },
       // { name: "drone", asset: droneHammer },
     ]);
   //if a deployable upgrade has been chosen, mousewheel scrolling will set this rotating through chosen upgrades
@@ -524,14 +544,14 @@ export default function StandardGame() {
         <div className="level">Stage: {level}</div>
         {isMuted ? (
           <img
-            src="src/assets/img/no-sound.png"
+            src="no-sound.png"
             alt="mute"
             className="muteBtn"
             onPointerDown={() => setIsMuted(!isMuted)}
           />
         ) : (
           <img
-            src="src/assets/img/sound.png"
+            src="sound.png"
             alt="unmute"
             className="muteBtn"
             onPointerDown={() => setIsMuted(!isMuted)}
