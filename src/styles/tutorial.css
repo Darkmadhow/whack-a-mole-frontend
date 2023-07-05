@@ -1,0 +1,91 @@
+.tutorial-page {
+  background: url('../assets/img/tutorial_background.png') no-repeat center
+    center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  padding-top: 2rem;
+}
+
+.tutorial-page .tutorial {
+  display: grid;
+  grid-template-areas:
+    'explanation explanation . . inputs'
+    '. . . . .'
+    'moles moles . . cooldowns';
+  grid-template-rows: 1fr 2rem 1fr;
+  /* grid-template-columns: repeat(5, minmax(1.5rem, 1fr)); */
+  grid-template-columns: 1fr 1fr 1.5rem 1.5rem 1fr;
+  width: 100%;
+  max-width: 1400px;
+  height: 100%;
+  /* max-height: 90vh; */
+  margin-top: 1.5rem;
+  padding: 1rem 2rem;
+}
+
+.tutorial-page .text-box {
+  /* margin: 2rem auto; */
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background-color: #333d;
+  /* width: min-content; */
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.tutorial-page .text-box h2 {
+  font-family: 'Luckiest Guy', Verdana, Geneva;
+  font-size: 2rem;
+}
+
+.tutorial-page .inputs {
+  grid-area: inputs;
+  align-items: flex-start;
+}
+
+.tutorial-page .cooldowns {
+  grid-area: cooldowns;
+  display: flex;
+  flex-direction: row;
+}
+
+.tutorial-page .explanation {
+  grid-area: explanation;
+}
+.tutorial-page .cooldowns img {
+  margin-left: 0.5rem;
+}
+
+.tutorial-page .moles {
+  grid-area: moles;
+  display: flex;
+  flex-direction: row;
+  column-gap: 2rem;
+  align-items: baseline;
+}
+
+.tutorial-page .moles figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media screen and (max-width: 600px) {
+  .tutorial-page .tutorial {
+    display: flex;
+    flex-direction: column;
+    row-gap: 1.5rem;
+  }
+}

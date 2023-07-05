@@ -23,15 +23,23 @@ export default function UpgradeModal({
           <div className="modal-action">
             <button
               onClick={() => onClick(option1)}
-              style={{ backgroundImage: `url(${option1.asset})` }}
+              style={{
+                backgroundImage: `url(${option1.asset})`,
+                backgroundSize: "cover",
+              }}
             >
-              {option1.name}
+              <div className="upgrade-name">{option1.descriptive_name}</div>
+              <div className="upgrade-desc">{option1.desc}</div>
             </button>
             <button
               onClick={() => onClick(option2)}
-              style={{ backgroundImage: `url(${option2.asset})` }}
+              style={{
+                backgroundImage: `url(${option2.asset})`,
+                backgroundSize: "cover",
+              }}
             >
-              {option2.name}
+              <div className="upgrade-name">{option2.descriptive_name}</div>
+              <div className="upgrade-desc">{option2.desc}</div>
             </button>
           </div>
         </form>
