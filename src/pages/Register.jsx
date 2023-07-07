@@ -51,6 +51,8 @@ export default function Register() {
         return alert(
           "Password and repeated Password must match. Check for typos."
         );
+      if (password.length < 8)
+        return alert("Password has to be at least 8 characters long");
       setIsLoading(true);
       const token = await registerUser({ username, email, password });
       setToken(token);
