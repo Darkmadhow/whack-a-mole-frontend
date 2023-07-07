@@ -22,7 +22,7 @@ export default function ProfileSettings() {
   }, [isMuted]);
 
   useEffect(() => {
-    if (audioPlayer && !isMuted) audioPlayer.pause();
+    if (audioPlayer && !isMuted) audioPlayer.play();
 
     return () => {
       if (audioPlayer) audioPlayer.pause();
